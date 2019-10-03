@@ -59,7 +59,7 @@ function Run-All-Tests {
 
 function Get-Tests-Ordered-By-Line-Number {
     $testFileContents = Get-Content $testFile
-    $testMethodRegex = "let\s+````([\w ]+)````\s+\("
+    $testMethodRegex = "let\s+````(.+?)````\s+\("
     $testMethodMatches = [regex]::Matches($testFileContents, $testMethodRegex)
 
     $orderedTestMethods = @()
