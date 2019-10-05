@@ -47,7 +47,8 @@ function Enable-All-Tests {
 }
 
 filter Sanitize-Test-Output {
-    ($_ -Replace "\[$InputDirectory.*?\]", "").Trim()
+    $_ = ($_ -Replace "\[$InputDirectory.*?\]", "")
+    ($_ -Replace "$InputDirectory/", "").Trim()
 }
 
 function Run-All-Tests {
