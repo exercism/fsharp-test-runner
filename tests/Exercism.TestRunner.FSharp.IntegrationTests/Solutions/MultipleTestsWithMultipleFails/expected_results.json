@@ -4,7 +4,7 @@
     {
       "name": "FakeTest.Add_should_add_numbers",
       "status": "fail",
-      "message": "FsUnit.Xunit+MatchException : Exception of type 'FsUnit.Xunit+MatchException' was thrown.\nExpected: Equals 3\nActual:   was 2"
+      "message": "Expected: Equals 3\nActual:   was 2"
     },
     {
       "name": "FakeTest.Sub_should_subtract_numbers",
@@ -13,7 +13,7 @@
     {
       "name": "FakeTest.Mul_should_multiply_numbers",
       "status": "fail",
-      "message": "FsUnit.Xunit+MatchException : Exception of type 'FsUnit.Xunit+MatchException' was thrown.\nExpected: Equals 7\nActual:   was 6"
+      "message": "Expected: Equals 7\nActual:   was 6"
     }
   ]
 }

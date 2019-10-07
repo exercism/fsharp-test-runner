@@ -48,7 +48,7 @@ function Enable-All-Tests {
 
 filter Sanitize-Test-Output {
     $_ = ($_ -Replace "\[$InputDirectory.*?\]", "")
-    ($_ -Replace "$InputDirectory/", "").Trim()
+    ($_ -Replace "$InputDirectory/", "").Trim()    
 }
 
 function Run-All-Tests {
@@ -96,7 +96,7 @@ function Create-Test-Result-For-Failed-Test ($UnitTestResult) {
     [pscustomobject]@{
         name    = $UnitTestResult.testName;
         status  = "fail";
-        message = $UnitTestResult.Output.ErrorInfo.Message;
+        message = ($UnitTestResult.Output.ErrorInfo.Message -Replace "FsUnit\.Xunit\+MatchException : Exception of type 'FsUnit\.Xunit\+MatchException' was thrown.", "").Trim();
     }
 }
 

@@ -4,7 +4,7 @@
     {
       "name": "FakeTest.Add_should_add_numbers",
       "status": "fail",
-      "message": "FsUnit.Xunit+MatchException : Exception of type 'FsUnit.Xunit+MatchException' was thrown.\nExpected: Equals 3\nActual:   was 2"
+      "message": "Expected: Equals 3\nActual:   was 2"
     }
   ]
 }

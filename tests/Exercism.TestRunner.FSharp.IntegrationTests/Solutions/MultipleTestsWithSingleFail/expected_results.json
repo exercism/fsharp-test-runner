@@ -12,7 +12,7 @@
     {
       "name": "FakeTest.Mul_should_multiply_numbers",
       "status": "fail",
-      "message": "FsUnit.Xunit+MatchException : Exception of type 'FsUnit.Xunit+MatchException' was thrown.\nExpected: Equals 5\nActual:   was 6"
+      "message": "Expected: Equals 5\nActual:   was 6"
     }
   ]
 }
