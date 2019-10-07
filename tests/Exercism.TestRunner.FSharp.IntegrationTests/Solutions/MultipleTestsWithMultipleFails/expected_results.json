@@ -1,0 +1,19 @@
+{
+  "status": "fail",
+  "tests": [
+    {
+      "name": "FakeTest.Add_should_add_numbers",
+      "status": "fail",
+      "message": "Expected: Equals 3\nActual:   was 2"
+    },
+    {
+      "name": "FakeTest.Sub_should_subtract_numbers",
+      "status": "pass"
+    },
+    {
+      "name": "FakeTest.Mul_should_multiply_numbers",
+      "status": "fail",
+      "message": "Expected: Equals 7\nActual:   was 6"
+    }
+  ]
+}
