@@ -11,7 +11,8 @@
     that NPM has to be installed for this functionality to work.
 #>
 
-dotnet tool install -g dotnet-format --version 3.0.4
-dotnet format
+dotnet restore
+dotnet fantomas ./tests/Exercism.TestRunner.FSharp.IntegrationTests/Helpers.fs
+dotnet fantomas ./tests/Exercism.TestRunner.FSharp.IntegrationTests/Tests.fs
 
 npx prettier@1.18.2 --write "**/*.{json,md}"
