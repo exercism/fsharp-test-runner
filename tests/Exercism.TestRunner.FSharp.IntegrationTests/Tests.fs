@@ -46,23 +46,26 @@ let private assertSolutionHasExpectedResults (directory: string) =
     testRun.Actual |> should equal testRun.Expected
 
 [<Fact>]
-let ``Solution with compile error``() = assertSolutionHasExpectedResults "CompileError"
+let ``Single compile error``() = assertSolutionHasExpectedResults "SingleCompileError"
 
 [<Fact>]
-let ``Solution with multiple tests that pass``() = assertSolutionHasExpectedResults "MultipleTestsWithAllPasses"
+let ``Multiple compile errors``() = assertSolutionHasExpectedResults "MultipleCompileErrors"
 
 [<Fact>]
-let ``Solution with multiple tests and single fail``() = assertSolutionHasExpectedResults "MultipleTestsWithSingleFail"
+let ``Multiple tests that pass``() = assertSolutionHasExpectedResults "MultipleTestsWithAllPasses"
 
 [<Fact>]
-let ``Solution with multiple tests and multiple fails``() =
+let ``Multiple tests and single fail``() = assertSolutionHasExpectedResults "MultipleTestsWithSingleFail"
+
+[<Fact>]
+let ``Multiple tests and multiple fails``() =
     assertSolutionHasExpectedResults "MultipleTestsWithMultipleFails"
 
 [<Fact>]
-let ``Solution with single test that passes``() = assertSolutionHasExpectedResults "SingleTestThatPasses"
+let ``Single test that passes``() = assertSolutionHasExpectedResults "SingleTestThatPasses"
 
 [<Fact>]
-let ``Solution with single test that fails``() = assertSolutionHasExpectedResults "SingleTestThatFails"
+let ``Single test that fails``() = assertSolutionHasExpectedResults "SingleTestThatFails"
 
 [<Fact>]
 let ``NetCoreApp2.1 solution``() = assertSolutionHasExpectedResults "NetCoreApp2.1"
