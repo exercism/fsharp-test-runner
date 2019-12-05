@@ -58,14 +58,16 @@ let ``Multiple tests that pass``() = assertSolutionHasExpectedResults "MultipleT
 let ``Multiple tests and single fail``() = assertSolutionHasExpectedResults "MultipleTestsWithSingleFail"
 
 [<Fact>]
-let ``Multiple tests and multiple fails``() =
-    assertSolutionHasExpectedResults "MultipleTestsWithMultipleFails"
+let ``Multiple tests and multiple fails``() = assertSolutionHasExpectedResults "MultipleTestsWithMultipleFails"
 
 [<Fact>]
 let ``Single test that passes``() = assertSolutionHasExpectedResults "SingleTestThatPasses"
 
 [<Fact>]
 let ``Single test that fails``() = assertSolutionHasExpectedResults "SingleTestThatFails"
+
+[<Fact>]
+let ``Not implemented``() = assertSolutionHasExpectedResults "NotImplemented"
 
 [<Fact>]
 let ``NetCoreApp2.1 solution``() = assertSolutionHasExpectedResults "NetCoreApp2.1"

@@ -96,11 +96,17 @@ function Create-Test-Result-For-Passed-Test ($UnitTestResult) {
     }
 }
 
+filter Sanitize-Error-Message {
+    $sanitized = $_ -Replace "FsUnit\.Xunit\+MatchException : Exception of type 'FsUnit\.Xunit\+MatchException' was thrown.", "" 
+    $sanitized = $sanitized -Replace "System\.Exception\s*:\s*Please implement", "Please implement"
+    $sanitized.Trim()
+}
+
 function Create-Test-Result-For-Failed-Test ($UnitTestResult) {
     [pscustomobject]@{
         name    = $UnitTestResult.testName;
         status  = "fail";
-        message = ($UnitTestResult.Output.ErrorInfo.Message -Replace "FsUnit\.Xunit\+MatchException : Exception of type 'FsUnit\.Xunit\+MatchException' was thrown.", "").Trim();
+        message = $UnitTestResult.Output.ErrorInfo.Message | Sanitize-Error-Message;
     }
 }
 
