@@ -48,7 +48,7 @@ function Enable-All-Tests {
 }
 
 filter Sanitize-Test-Output {
-    $sanitized = $_ -Replace "\s*\[$InputDirectory.*?\]", ""
+    $sanitized = $_ -Replace "\s*\[.*$InputDirectory.*?\]", ""
     $sanitized = $sanitized -Replace "$InputDirectory/", ""
     $sanitized = $sanitized -Replace "^.+?\.fs\(\d+,\d+\):\s*", "$1"
     $sanitized = $sanitized -Replace "\r?\n.+?\.fs\(\d+,\d+\):\s*", "`n"
@@ -64,7 +64,7 @@ function Run-All-Tests {
 
 function Get-Tests-Ordered-By-Line-Number {
     $testFileContents = Get-Content $testFile
-    $testMethodRegex = "let\s+````(.+?)````\s+\("
+    $testMethodRegex = "let\s*````(.+?)````\s*\("
     $testMethodMatches = [regex]::Matches($testFileContents, $testMethodRegex)
 
     $orderedTestMethods = @()

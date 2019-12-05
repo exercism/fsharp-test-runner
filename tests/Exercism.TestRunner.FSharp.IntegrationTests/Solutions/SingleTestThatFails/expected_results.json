@@ -2,7 +2,7 @@
   "status": "fail",
   "tests": [
     {
-      "name": "FakeTest.Add_should_add_numbers",
+      "name": "FakeTest.Add should add numbers",
       "status": "fail",
       "message": "Expected: Equals 3\nActual:   was 2"
     }

@@ -2,15 +2,15 @@
   "status": "fail",
   "tests": [
     {
-      "name": "FakeTest.Add_should_add_numbers",
+      "name": "FakeTest.Add should add numbers",
       "status": "pass"
     },
     {
-      "name": "FakeTest.Sub_should_subtract_numbers",
+      "name": "FakeTest.Sub should subtract numbers",
       "status": "pass"
     },
     {
-      "name": "FakeTest.Mul_should_multiply_numbers",
+      "name": "FakeTest.Mul should multiply numbers",
       "status": "fail",
       "message": "Expected: Equals 5\nActual:   was 6"
     }
