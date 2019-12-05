@@ -64,13 +64,13 @@ function Run-All-Tests {
 
 function Get-Tests-Ordered-By-Line-Number {
     $testFileContents = Get-Content $testFile
-    $testMethodRegex = "let\s*````(.+?)````\s*\("
+    $testMethodRegex = "let\s*(````)?(.+?)(````)?\s*\("
     $testMethodMatches = [regex]::Matches($testFileContents, $testMethodRegex)
 
     $orderedTestMethods = @()
 
     foreach ($captures in $testMethodMatches.Captures) {
-        $testMethodName = $captures.Groups[1].Value
+        $testMethodName = $captures.Groups[2].Value
         $fullMethodName = "${exerciseName}Test.${testMethodName}";
         $orderedTestMethods += $fullMethodName
     }

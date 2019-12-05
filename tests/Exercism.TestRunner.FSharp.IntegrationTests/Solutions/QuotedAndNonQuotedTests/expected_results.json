@@ -1,0 +1,9 @@
+{
+  "status": "pass",
+  "tests": [
+    {
+      "name": "FakeTest.Add should add numbers",
+      "status": "pass"
+    }
+  ]
+}
