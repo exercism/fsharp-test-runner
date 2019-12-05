@@ -5,5 +5,4 @@ open FsUnit.Xunit
 open Fake
 
 [<Fact>]
-let ``Add_should_add_numbers`` () =
-    Add 1 1 |> should equal 2
+let Add_should_add_numbers() = add 1 1 |> should equal 2

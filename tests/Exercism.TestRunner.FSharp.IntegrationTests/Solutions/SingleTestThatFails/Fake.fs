@@ -1,3 +1,3 @@
 module Fake
 
-let Add x y = x + y
+let add x y = x + y
