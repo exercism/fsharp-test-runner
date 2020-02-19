@@ -4,6 +4,11 @@ open System.IO
 open Xunit
 open FsUnit.Xunit
 
+open System.Text.Encodings.Web
+open System.Text.Json
+open System.Text.Json.Serialization
+open System.Text.Unicode
+open Exercism.TestRunner.FSharp.Program
 open Exercism.TestRunner.FSharp.IntegrationTests.Helpers
 
 type TestRun =
@@ -14,24 +19,42 @@ type TestSolution =
     { Slug: string
       Directory: string
       DirectoryName: string }
+    
+type JsonTestResult =
+    { [<JsonPropertyName("name")>] Name: string
+      [<JsonPropertyName("status")>] Status: string
+      [<JsonPropertyName("message")>] Message: string
+      [<JsonPropertyName("output")>] Output: string }
+
+type JsonTestRun =
+    { [<JsonPropertyName("status")>] Status: string
+      [<JsonPropertyName("message")>] Message: string      
+      [<JsonPropertyName("tests")>] Tests: JsonTestResult[] }
+
+let private jsonSerializerOptions = JsonSerializerOptions()
+jsonSerializerOptions.Converters.Add(JsonFSharpConverter())
+jsonSerializerOptions.Encoder <- JavaScriptEncoder.UnsafeRelaxedJsonEscaping
+jsonSerializerOptions.IgnoreNullValues <- true    
+
+let normalizeTestRunResultJson (json: string) =
+    let jsonTestRun = JsonSerializer.Deserialize<JsonTestRun>(json, jsonSerializerOptions)
+    let normalizedJsonTestRun = { jsonTestRun with Tests = jsonTestRun.Tests |> Array.sortBy (fun test -> test.Name) }
+    JsonSerializer.Serialize(normalizedJsonTestRun, jsonSerializerOptions)
 
 let private runTestRunner testSolution =
-    let run() =
-        let testScript = Directory.findFileRecursively "run.ps1"
-        let testScriptArguments = [ testSolution.Slug; testSolution.Directory; testSolution.Directory ]
-        let powershellArguments = testScript :: testScriptArguments
-        Process.run "pwsh" powershellArguments
+    let run() = main [| testSolution.Slug; testSolution.Directory; testSolution.Directory |]        
 
     let readTestRunResults() =
         let readTestRunResultFile fileName =
             Path.Combine(testSolution.Directory, fileName)
             |> File.ReadAllText
-            |> Json.normalize
+            |> String.normalize
+            |> normalizeTestRunResultJson
 
         { Expected = readTestRunResultFile "results.json"
           Actual = readTestRunResultFile "expected_results.json" }
 
-    run()
+    run() |> ignore
     readTestRunResults()
 
 let private assertSolutionHasExpectedResults (directory: string) =
@@ -43,7 +66,7 @@ let private assertSolutionHasExpectedResults (directory: string) =
           DirectoryName = Path.GetFileName(testSolutionDirectory) }
 
     let testRun = runTestRunner testSolution
-    testRun.Actual |> should equal testRun.Expected
+    testRun.Actual |> should equal testRun.Expected 
 
 [<Fact>]
 let ``Single compile error``() = assertSolutionHasExpectedResults "SingleCompileError"
@@ -70,10 +93,10 @@ let ``Single test that fails``() = assertSolutionHasExpectedResults "SingleTestT
 let ``Not implemented``() = assertSolutionHasExpectedResults "NotImplemented"
 
 [<Fact>]
-let ``NetCoreApp2.1 solution``() = assertSolutionHasExpectedResults "NetCoreApp2.1"
-
-[<Fact>]
-let ``NetCoreApp2.2 solution``() = assertSolutionHasExpectedResults "NetCoreApp2.2"
+let ``Quoted and non-quoted tests``() = assertSolutionHasExpectedResults "QuotedAndNonQuotedTests"
 
 [<Fact>]
 let ``NetCoreApp3.0 solution``() = assertSolutionHasExpectedResults "NetCoreApp3.0"
+
+[<Fact>]
+let ``NetCoreApp3.1 solution``() = assertSolutionHasExpectedResults "NetCoreApp3.1"

@@ -4,6 +4,10 @@
     {
       "name": "FakeTest.Add should add numbers",
       "status": "pass"
+    },
+    {
+      "name": "FakeTest.Sub_should_subtract_numbers",
+      "status": "pass"
     }
   ]
 }

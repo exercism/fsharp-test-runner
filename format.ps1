@@ -12,6 +12,7 @@
 #>
 
 dotnet restore
+dotnet fantomas --recurse ./src/Exercism.TestRunner.FSharp
 dotnet fantomas ./tests/Exercism.TestRunner.FSharp.IntegrationTests/Helpers.fs
 dotnet fantomas ./tests/Exercism.TestRunner.FSharp.IntegrationTests/Tests.fs
 
