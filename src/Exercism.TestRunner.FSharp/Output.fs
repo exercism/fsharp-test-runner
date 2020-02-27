@@ -7,17 +7,25 @@ open Exercism.TestRunner.FSharp.Core
 open Exercism.TestRunner.FSharp.Utils
 
 type JsonTestResult =
-    { [<JsonPropertyName("name")>] Name: string
-      [<JsonPropertyName("status")>] Status: string
-      [<JsonPropertyName("message")>] Message: string
-      [<JsonPropertyName("output")>] Output: string }
+    { [<JsonPropertyName("name")>]
+      Name: string
+      [<JsonPropertyName("status")>]
+      Status: string
+      [<JsonPropertyName("message")>]
+      Message: string
+      [<JsonPropertyName("output")>]
+      Output: string }
 
 type JsonTestRun =
-    { [<JsonPropertyName("status")>] Status: string
-      [<JsonPropertyName("message")>] Message: string      
-      [<JsonPropertyName("tests")>] Tests: JsonTestResult[] }
+    { [<JsonPropertyName("status")>]
+      Status: string
+      [<JsonPropertyName("message")>]
+      Message: string
+      [<JsonPropertyName("tests")>]
+      Tests: JsonTestResult [] }
 
 let private jsonSerializerOptions = JsonSerializerOptions()
+
 jsonSerializerOptions.IgnoreNullValues <- true
 
 let private toJsonTestStatus (testStatus: TestStatus) =
@@ -40,5 +48,4 @@ let private toJsonTestRun (testRun: TestRun) =
 let private serializeTestResults (testRun: TestRun) =
     JsonSerializer.Serialize(toJsonTestRun testRun, jsonSerializerOptions)
 
-let writeTestResults context testRun =
-    File.WriteAllText(context.ResultsFile, serializeTestResults testRun)
+let writeTestResults context testRun = File.WriteAllText(context.ResultsFile, serializeTestResults testRun)

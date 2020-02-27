@@ -19,22 +19,30 @@ type TestSolution =
     { Slug: string
       Directory: string
       DirectoryName: string }
-    
+
 type JsonTestResult =
-    { [<JsonPropertyName("name")>] Name: string
-      [<JsonPropertyName("status")>] Status: string
-      [<JsonPropertyName("message")>] Message: string
-      [<JsonPropertyName("output")>] Output: string }
+    { [<JsonPropertyName("name")>]
+      Name: string
+      [<JsonPropertyName("status")>]
+      Status: string
+      [<JsonPropertyName("message")>]
+      Message: string
+      [<JsonPropertyName("output")>]
+      Output: string }
 
 type JsonTestRun =
-    { [<JsonPropertyName("status")>] Status: string
-      [<JsonPropertyName("message")>] Message: string      
-      [<JsonPropertyName("tests")>] Tests: JsonTestResult[] }
+    { [<JsonPropertyName("status")>]
+      Status: string
+      [<JsonPropertyName("message")>]
+      Message: string
+      [<JsonPropertyName("tests")>]
+      Tests: JsonTestResult [] }
 
 let private jsonSerializerOptions = JsonSerializerOptions()
+
 jsonSerializerOptions.Converters.Add(JsonFSharpConverter())
 jsonSerializerOptions.Encoder <- JavaScriptEncoder.UnsafeRelaxedJsonEscaping
-jsonSerializerOptions.IgnoreNullValues <- true    
+jsonSerializerOptions.IgnoreNullValues <- true
 
 let normalizeTestRunResultJson (json: string) =
     let jsonTestRun = JsonSerializer.Deserialize<JsonTestRun>(json, jsonSerializerOptions)
@@ -42,7 +50,7 @@ let normalizeTestRunResultJson (json: string) =
     JsonSerializer.Serialize(normalizedJsonTestRun, jsonSerializerOptions)
 
 let private runTestRunner testSolution =
-    let run() = main [| testSolution.Slug; testSolution.Directory; testSolution.Directory |]        
+    let run() = main [| testSolution.Slug; testSolution.Directory; testSolution.Directory |]
 
     let readTestRunResults() =
         let readTestRunResultFile fileName =
@@ -66,7 +74,7 @@ let private assertSolutionHasExpectedResults (directory: string) =
           DirectoryName = Path.GetFileName(testSolutionDirectory) }
 
     let testRun = runTestRunner testSolution
-    testRun.Actual |> should equal testRun.Expected 
+    testRun.Actual |> should equal testRun.Expected
 
 [<Fact>]
 let ``Single compile error``() = assertSolutionHasExpectedResults "SingleCompileError"

@@ -8,7 +8,8 @@
   <ItemGroup>
     <Compile Include="Utils.fs" />
     <Compile Include="Core.fs" />
-    <Compile Include="Compilation.fs" />
+    <Compile Include="Syntax.fs" />
+    <Compile Include="Compiler.fs" />
     <Compile Include="Testing.fs" />
     <Compile Include="Output.fs" />
     <Compile Include="Program.fs" />
@@ -25,6 +26,7 @@
     <PackageReference Include="xunit" Version="2.4.1" />
     <PackageReference Include="xunit.extensibility.execution" Version="2.4.1" />
     <PackageReference Include="xunit.runner.utility" Version="2.4.1" />
+    <PackageReference Include="FsUnit.xUnit" Version="3.8.0" />
   </ItemGroup>
 
 </Project>

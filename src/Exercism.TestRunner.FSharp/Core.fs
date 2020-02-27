@@ -15,7 +15,7 @@ type TestRun =
     { Message: string option
       Status: TestStatus
       Tests: TestResult list }
-    
+
 type TestRunContext =
     { InputFile: string
       TestFile: string

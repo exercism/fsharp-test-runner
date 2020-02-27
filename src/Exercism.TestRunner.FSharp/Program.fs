@@ -1,11 +1,11 @@
-﻿module Exercism.TestRunner.FSharp.Program
+module Exercism.TestRunner.FSharp.Program
 
 open System.IO
 open CommandLine
 open Humanizer
 open Exercism.TestRunner.FSharp.Core
 open Exercism.TestRunner.FSharp.Testing
-open Exercism.TestRunner.FSharp.Project
+open Exercism.TestRunner.FSharp.Compiler
 open Exercism.TestRunner.FSharp.Output
 
 type Options =
@@ -23,7 +23,7 @@ let private createTestRunContext options =
     let testFile = Path.Combine(options.InputDirectory, sprintf "%sTest.fs" exercise)
     let projectFile = Path.Combine(options.InputDirectory, sprintf "%s.fsproj" exercise)
     let resultsFile = Path.Combine(options.OutputDirectory, "results.json")
-    
+
     { InputFile = inputFile
       TestFile = testFile
       ProjectFile = projectFile
@@ -32,11 +32,11 @@ let private createTestRunContext options =
 let private parseOptions argv =
     let parserResult = CommandLine.Parser.Default.ParseArguments<Options>(argv)
     match parserResult with
-    | :? Parsed<Options> as options -> Some options.Value
+    | :? (Parsed<Options>) as options -> Some options.Value
     | _ -> None
 
 let private parseSuccess options =
-    let context = createTestRunContext options     
+    let context = createTestRunContext options
     let result = compileProject context |> testRunFromCompilationResult
 
     writeTestResults context result
@@ -47,5 +47,4 @@ let main argv =
     | Some options ->
         parseSuccess options
         0
-    | None ->
-        1
+    | None -> 1
