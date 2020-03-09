@@ -104,7 +104,7 @@ let ``Not implemented``() = assertSolutionHasExpectedResults "NotImplemented"
 let ``Quoted and non-quoted tests``() = assertSolutionHasExpectedResults "QuotedAndNonQuotedTests"
 
 [<Fact>]
-let ``NetCoreApp3.0 solution``() = assertSolutionHasExpectedResults "NetCoreApp3.0"
+let ``NetCoreApp3_0 solution``() = assertSolutionHasExpectedResults "NetCoreApp3.0"
 
 [<Fact>]
-let ``NetCoreApp3.1 solution``() = assertSolutionHasExpectedResults "NetCoreApp3.1"
+let ``NetCoreApp3_1 solution``() = assertSolutionHasExpectedResults "NetCoreApp3.1"
