@@ -37,7 +37,7 @@ let private testResultFromPass (passedTest: ITestPassed) =
 let private failureToMessage messages =
     messages
     |> Array.map String.normalize
-    |> Array.map (fun message -> message.Replace("Exception of type 'FsUnit.Xunit+MatchException' was thrown.\n", ""))
+    |> Array.map (fun message -> message.Replace("Exception of type 'FsUnit.Xunit+MatchException' was thrown.\n", "").Trim())
     |> String.concat "\n"
 
 let private testResultFromFailed (failedTest: ITestFailed) =
@@ -98,10 +98,11 @@ let private testRunFromCompilationError compilationError =
         testRunFromError
             (errors
              |> Array.map errorToMessage
-             |> String.concat "\n")
+             |> String.concat "\n"
+             |> String.normalize)
     | CompilationFailed -> testRunFromError "Could not compile project"
     | ProjectNotFound -> testRunFromError "Could not find project file"
-    | TestFileNotFound -> testRunFromError "Could not find test file"
+    | TestsFileNotFound -> testRunFromError "Could not find test file"
 
 let private testRunFromCompiledAssembly (assembly: Assembly) =
     assembly

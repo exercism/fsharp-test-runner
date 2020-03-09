@@ -1,5 +1,5 @@
 {
   "status": "error",
-  "message": "FakeTest.fs:8: The value or constructor 'add' is not defined.",
+  "message": "FakeTests.fs:8: The value or constructor 'add' is not defined.",
   "tests": []
 }

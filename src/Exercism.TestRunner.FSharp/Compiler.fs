@@ -12,7 +12,7 @@ open FSharp.Compiler.Text
 
 type CompilerError =
     | ProjectNotFound
-    | TestFileNotFound
+    | TestsFileNotFound
     | CompilationFailed
     | CompilationError of FSharpErrorInfo []
 
@@ -75,16 +75,16 @@ let private parseFile (filePath: string) (parseOptions: FSharpParsingOptions) =
 let private enableAllTests (context: TestRunContext) parsedInput =
     let visited = TestModuleSimplifier().VisitInput(parsedInput)
     let code = treeToCode visited
-    File.WriteAllText(context.TestFile, code)
+    File.WriteAllText(context.TestsFile, code)
 
 let private rewriteSyntax (context: TestRunContext) (projectOptions: FCS.FCS_ProjectOptions) =
-    if File.Exists(context.TestFile) then
+    if File.Exists(context.TestsFile) then
         getParseOptions projectOptions
-        |> Result.bind (parseFile context.TestFile)
+        |> Result.bind (parseFile context.TestsFile)
         |> Result.map (enableAllTests context)
         |> Result.map (fun _ -> projectOptions)
     else
-        Result.Error TestFileNotFound
+        Result.Error TestsFileNotFound
 
 let private compile (projectOptions: FCS.FCS_ProjectOptions) =
     let compileFromOptions compileOptions =

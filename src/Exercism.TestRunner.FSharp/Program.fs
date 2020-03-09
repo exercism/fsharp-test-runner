@@ -20,12 +20,12 @@ let private createTestRunContext options =
     let exercise = options.Slug.Dehumanize().Pascalize()
 
     let inputFile = Path.Combine(options.InputDirectory, sprintf "%s.fs" exercise)
-    let testFile = Path.Combine(options.InputDirectory, sprintf "%sTest.fs" exercise)
+    let testsFile = Path.Combine(options.InputDirectory, sprintf "%sTests.fs" exercise)
     let projectFile = Path.Combine(options.InputDirectory, sprintf "%s.fsproj" exercise)
     let resultsFile = Path.Combine(options.OutputDirectory, "results.json")
 
     { InputFile = inputFile
-      TestFile = testFile
+      TestsFile = testsFile
       ProjectFile = projectFile
       ResultsFile = resultsFile }
 

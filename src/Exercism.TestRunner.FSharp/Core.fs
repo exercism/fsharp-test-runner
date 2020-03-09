@@ -18,6 +18,6 @@ type TestRun =
 
 type TestRunContext =
     { InputFile: string
-      TestFile: string
+      TestsFile: string
       ProjectFile: string
       ResultsFile: string }

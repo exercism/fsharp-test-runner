@@ -1,7 +1,7 @@
 module Exercism.TestRunner.FSharp.Utils
 
 module String =
-    let normalize (str: string) = str.Replace("\r\n", "\n")
+    let normalize (str: string) = str.Replace("\r\n", "\n").Trim()
 
 module File =
     open System.IO
