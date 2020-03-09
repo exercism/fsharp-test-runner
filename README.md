@@ -1,4 +1,4 @@
-# Exercism C# test runner
+# Exercism F# test runner
 
 A test runner automatically verifies if a submission passes all the tests.
 
