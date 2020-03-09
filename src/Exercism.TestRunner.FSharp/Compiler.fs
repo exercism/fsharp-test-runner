@@ -16,14 +16,14 @@ type CompilerError =
     | CompilationFailed
     | CompilationError of FSharpErrorInfo []
 
-type TreeSimplifier() =
+type TestModuleSimplifier() =
     inherit SyntaxVisitor()
 
-    override this.visitSynAttribute (attr: SynAttribute): SynAttribute =
+    override this.VisitSynAttribute (attr: SynAttribute): SynAttribute =
         match attr.TypeName with
         | LongIdentWithDots([ ident ], _) when ident.idText = "Fact" ->
-            base.visitSynAttribute ({ attr with ArgExpr = SynExpr.Const(SynConst.Unit, attr.ArgExpr.Range) })
-        | _ -> base.visitSynAttribute (attr)
+            base.VisitSynAttribute ({ attr with ArgExpr = SynExpr.Const(SynConst.Unit, attr.ArgExpr.Range) })
+        | _ -> base.VisitSynAttribute (attr)
 
 let private checker = FSharpChecker.Create()
 
@@ -73,7 +73,7 @@ let private parseFile (filePath: string) (parseOptions: FSharpParsingOptions) =
     | None -> Result.Error CompilationFailed
 
 let private enableAllTests (context: TestRunContext) parsedInput =
-    let visited = TreeSimplifier().visitInput(parsedInput)
+    let visited = TestModuleSimplifier().VisitInput(parsedInput)
     let code = treeToCode visited
     File.WriteAllText(context.TestFile, code)
 
