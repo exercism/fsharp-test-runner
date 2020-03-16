@@ -29,22 +29,20 @@ let private createTestRunContext options =
       ProjectFile = projectFile
       ResultsFile = resultsFile }
 
-let private parseOptions argv =
-    let parserResult = CommandLine.Parser.Default.ParseArguments<Options>(argv)
-    match parserResult with
-    | :? (Parsed<Options>) as options -> Some options.Value
-    | _ -> None
-
 let private parseSuccess options =
     let context = createTestRunContext options
     let result = compileProject context |> testRunFromCompilationResult
 
     writeTestResults context result
 
+let private parseOptions argv =
+    let parserResult = CommandLine.Parser.Default.ParseArguments<Options>(argv)
+    match parserResult with
+    | :? (Parsed<Options>) as options -> Some options.Value
+    | _ -> None
+
 [<EntryPoint>]
 let main argv =
-    match parseOptions argv with
-    | Some options ->
-        parseSuccess options
-        0
+    match parseOptions argv |> Option.map parseSuccess with
+    | Some _ -> 0
     | None -> 1
