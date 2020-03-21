@@ -5,6 +5,7 @@ open Exercism.TestRunner.FSharp.Core
 open Exercism.TestRunner.FSharp.Syntax
 open Exercism.TestRunner.FSharp.Utils
 open FSharp.Compiler.Ast
+open System
 open System.IO
 open System.Reflection
 open FSharp.Compiler.SourceCodeServices
@@ -19,11 +20,11 @@ type CompilerError =
 type TestModuleSimplifier() =
     inherit SyntaxVisitor()
 
-    override this.VisitSynAttribute (attr: SynAttribute): SynAttribute =
+    override this.VisitSynAttribute(attr: SynAttribute): SynAttribute =
         match attr.TypeName with
         | LongIdentWithDots([ ident ], _) when ident.idText = "Fact" ->
-            base.VisitSynAttribute ({ attr with ArgExpr = SynExpr.Const(SynConst.Unit, attr.ArgExpr.Range) })
-        | _ -> base.VisitSynAttribute (attr)
+            base.VisitSynAttribute({ attr with ArgExpr = SynExpr.Const(SynConst.Unit, attr.ArgExpr.Range) })
+        | _ -> base.VisitSynAttribute(attr)
 
 let private checker = FSharpChecker.Create()
 
@@ -36,10 +37,14 @@ let private netFwInfo = Dotnet.ProjInfo.Workspace.NetFWInfo.Create(infoConfig)
 let private binder = Dotnet.ProjInfo.Workspace.FCS.FCSBinder(netFwInfo, loader, checker)
 
 let private dotnetRestore (projectFile: string) =
-    if not (File.Exists projectFile) then Result.Error ProjectNotFound
+    if not (File.Exists projectFile) then
+        Result.Error ProjectNotFound
     else
-        Process.exec "dotnet" "restore" (Path.GetDirectoryName projectFile)
-        |> Result.mapError (fun _ -> CompilationFailed)
+        let homeDir = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile)
+        let nugetDir = Path.Combine(homeDir, ".nuget")
+        let arguments = sprintf "restore -s %s" nugetDir
+        let workingDir = Path.GetDirectoryName projectFile
+        Process.exec "dotnet" arguments workingDir |> Result.mapError (fun _ -> CompilationFailed)
 
 let getProjectOptions (context: TestRunContext) =
     dotnetRestore context.ProjectFile
@@ -90,7 +95,8 @@ let private compile (projectOptions: FCS.FCS_ProjectOptions) =
     let compileFromOptions compileOptions =
         let errors, exitCode = checker.Compile(compileOptions) |> Async.RunSynchronously
 
-        if exitCode = 0 then Result.Ok(Assembly.LoadFile(assemblyFilePath compileOptions))
+        if exitCode = 0
+        then Result.Ok(Assembly.LoadFile(assemblyFilePath compileOptions))
         else Result.Error(CompilationError errors)
 
     getCompileOptions projectOptions |> compileFromOptions

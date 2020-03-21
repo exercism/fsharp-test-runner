@@ -29,4 +29,4 @@ param (
 )
 
 docker build -t exercism/fsharp-test-runner .
-docker run -v ${InputDirectory}:/solution -v ${OutputDirectory}:/results exercism/fsharp-test-runner $Exercise /solution /results
+docker run --network none -v ${InputDirectory}:/solution -v ${OutputDirectory}:/results exercism/fsharp-test-runner $Exercise /solution /results
