@@ -13,7 +13,6 @@
 
 dotnet tool restore
 dotnet fantomas --recurse ./src/Exercism.TestRunner.FSharp
-dotnet fantomas ./tests/Exercism.TestRunner.FSharp.IntegrationTests/Helpers.fs
 dotnet fantomas ./tests/Exercism.TestRunner.FSharp.IntegrationTests/Tests.fs
 
 npx prettier@1.19.1 --write "**/*.{json,md}"

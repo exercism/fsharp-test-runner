@@ -2,7 +2,7 @@ module Exercism.TestRunner.FSharp.Compiler
 
 open Dotnet.ProjInfo.Workspace
 open Exercism.TestRunner.FSharp.Core
-open Exercism.TestRunner.FSharp.Syntax
+open Exercism.TestRunner.FSharp.Visitor
 open Exercism.TestRunner.FSharp.Utils
 open FSharp.Compiler.Ast
 open System
@@ -10,6 +10,7 @@ open System.IO
 open System.Reflection
 open FSharp.Compiler.SourceCodeServices
 open FSharp.Compiler.Text
+open Fantomas
 
 type CompilerError =
     | ProjectNotFound
@@ -76,6 +77,8 @@ let private parseFile (filePath: string) (parseOptions: FSharpParsingOptions) =
     match parsedResult.ParseTree with
     | Some tree -> Result.Ok tree
     | None -> Result.Error CompilationFailed
+    
+let private treeToCode tree = CodeFormatter.FormatASTAsync(tree, "", [], None, FormatConfig.FormatConfig. Default) |> Async.RunSynchronously
 
 let private enableAllTests (context: TestRunContext) parsedInput =
     let visited = TestModuleSimplifier().VisitInput(parsedInput)
