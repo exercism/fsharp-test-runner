@@ -7,9 +7,6 @@ open FsUnit.Xunit
 open System.Text.Encodings.Web
 open System.Text.Json
 open System.Text.Json.Serialization
-open System.Text.Unicode
-open Exercism.TestRunner.FSharp.Program
-open Exercism.TestRunner.FSharp.IntegrationTests.Helpers
 
 type TestRun =
     { Expected: string
@@ -47,16 +44,17 @@ jsonSerializerOptions.IgnoreNullValues <- true
 let normalizeTestRunResultJson (json: string) =
     let jsonTestRun = JsonSerializer.Deserialize<JsonTestRun>(json, jsonSerializerOptions)
     let normalizedJsonTestRun = { jsonTestRun with Tests = jsonTestRun.Tests |> Array.sortBy (fun test -> test.Name) }
-    JsonSerializer.Serialize(normalizedJsonTestRun, jsonSerializerOptions)
+    let normalizeWhitespace (str: string) = str.Replace("\r\n", "\n")
+    
+    JsonSerializer.Serialize(normalizedJsonTestRun, jsonSerializerOptions) |> normalizeWhitespace
 
 let private runTestRunner testSolution =
-    let run() = main [| testSolution.Slug; testSolution.Directory; testSolution.Directory |]
+    let run() = Exercism.TestRunner.FSharp.Program.main [| testSolution.Slug; testSolution.Directory; testSolution.Directory |]
 
     let readTestRunResults() =
         let readTestRunResultFile fileName =
             Path.Combine(testSolution.Directory, fileName)
             |> File.ReadAllText
-            |> String.normalize
             |> normalizeTestRunResultJson
 
         { Expected = readTestRunResultFile "results.json"
