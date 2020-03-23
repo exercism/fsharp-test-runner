@@ -45,11 +45,12 @@ let normalizeTestRunResultJson (json: string) =
     let jsonTestRun = JsonSerializer.Deserialize<JsonTestRun>(json, jsonSerializerOptions)
     let normalizedJsonTestRun = { jsonTestRun with Tests = jsonTestRun.Tests |> Array.sortBy (fun test -> test.Name) }
     let normalizeWhitespace (str: string) = str.Replace("\r\n", "\n")
-    
+
     JsonSerializer.Serialize(normalizedJsonTestRun, jsonSerializerOptions) |> normalizeWhitespace
 
 let private runTestRunner testSolution =
-    let run() = Exercism.TestRunner.FSharp.Program.main [| testSolution.Slug; testSolution.Directory; testSolution.Directory |]
+    let run() =
+        Exercism.TestRunner.FSharp.Program.main [| testSolution.Slug; testSolution.Directory; testSolution.Directory |]
 
     let readTestRunResults() =
         let readTestRunResultFile fileName =
@@ -100,6 +101,13 @@ let ``Not implemented``() = assertSolutionHasExpectedResults "NotImplemented"
 
 [<Fact>]
 let ``Quoted and non-quoted tests``() = assertSolutionHasExpectedResults "QuotedAndNonQuotedTests"
+
+[<Fact>]
+let ``Multiple tests with test ouput``() = assertSolutionHasExpectedResults "MultipleTestsWithTestOutput"
+
+[<Fact>]
+let ``Multiple tests with test ouput exceeding limit``() =
+    assertSolutionHasExpectedResults "MultipleTestsWithTestOutputExceedingLimit"
 
 [<Fact>]
 let ``NetCoreApp3_0 solution``() = assertSolutionHasExpectedResults "NetCoreApp3.0"

@@ -28,23 +28,38 @@ let private createTestAssemblyRunner testCases testAssembly =
     new XunitTestAssemblyRunner(testAssembly, testCases, diagnosticMessageSink, executionMessageSink,
                                 TestFrameworkOptions.ForExecution())
 
+let formatTestOutput output =
+    let truncate (str: string) =
+        let maxLength = 500
+
+        if str.Length > maxLength then
+            sprintf "%s\nOutput was truncated. Please limit to %d chars." str.[0..maxLength] maxLength
+        else
+            str
+
+    output
+    |> String.normalize
+    |> Option.ofNonEmptyString
+    |> Option.map truncate
+
 let private testResultFromPass (passedTest: ITestPassed) =
     { Name = passedTest.TestCase.DisplayName
       Status = TestStatus.Pass
       Message = None
-      Output = Option.ofNonEmptyString passedTest.Output }
+      Output = formatTestOutput passedTest.Output }
 
 let private failureToMessage messages =
     messages
     |> Array.map String.normalize
-    |> Array.map (fun message -> message.Replace("Exception of type 'FsUnit.Xunit+MatchException' was thrown.\n", "").Trim())
+    |> Array.map
+        (fun message -> message.Replace("Exception of type 'FsUnit.Xunit+MatchException' was thrown.\n", "").Trim())
     |> String.concat "\n"
 
 let private testResultFromFailed (failedTest: ITestFailed) =
     { Name = failedTest.TestCase.DisplayName
       Status = TestStatus.Fail
       Message = Some(failureToMessage failedTest.Messages)
-      Output = Option.ofNonEmptyString failedTest.Output }
+      Output = formatTestOutput failedTest.Output }
 
 let private runTests (assembly: Assembly) =
     let assemblyInfo = Reflector.Wrap(assembly)

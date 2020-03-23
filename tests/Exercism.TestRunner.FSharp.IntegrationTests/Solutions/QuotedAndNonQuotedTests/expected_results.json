@@ -2,11 +2,11 @@
   "status": "pass",
   "tests": [
     {
-      "name": "FakeTest.Add should add numbers",
+      "name": "FakeTest+Tests.Add should add numbers",
       "status": "pass"
     },
     {
-      "name": "FakeTest.Sub_should_subtract_numbers",
+      "name": "FakeTest+Tests.Sub_should_subtract_numbers",
       "status": "pass"
     }
   ]

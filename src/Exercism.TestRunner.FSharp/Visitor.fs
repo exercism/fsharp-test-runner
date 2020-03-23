@@ -10,8 +10,8 @@ type SyntaxVisitor() =
         | ParsedInput.ImplFile(ParsedImplFileInput(file, isScript, qualName, pragmas, hashDirectives, modules, b)) ->
             ParsedInput.ImplFile
                 (ParsedImplFileInput
-                    (file, isScript, qualName, pragmas, hashDirectives,
-                     List.map this.VisitSynModuleOrNamespace modules, b))
+                    (file, isScript, qualName, pragmas, hashDirectives, List.map this.VisitSynModuleOrNamespace modules,
+                     b))
         | ParsedInput.SigFile(ParsedSigFileInput(file, qualifiedName, pragmas, directives, synModuleOrNamespaceSigs)) ->
             ParsedInput.SigFile(ParsedSigFileInput(file, qualifiedName, pragmas, directives, synModuleOrNamespaceSigs))
 
@@ -69,7 +69,7 @@ type SyntaxVisitor() =
                 (typInfo
                  |> Option.map
                      (fun (typ, expr, leftParenRange, sep, rightParentRange) ->
-                         (this.VisitSynType typ, this.VisitSynExpr expr, leftParenRange, sep, rightParentRange)),
+                     (this.VisitSynType typ, this.VisitSynExpr expr, leftParenRange, sep, rightParentRange)),
                  copyInfo |> Option.map (fun (expr, opt) -> (this.VisitSynExpr expr, opt)),
                  recordFields |> List.map this.VisitRecordField, range)
         | SynExpr.AnonRecd(isStruct, copyInfo, recordFields, range) ->
@@ -139,8 +139,7 @@ type SyntaxVisitor() =
         | SynExpr.DotGet(expr, rangeOfDot, longDotId, range) ->
             SynExpr.DotGet(this.VisitSynExpr expr, rangeOfDot, this.VisitLongIdentWithDots longDotId, range)
         | SynExpr.DotSet(expr, longDotId, e2, range) ->
-            SynExpr.DotSet
-                (this.VisitSynExpr expr, this.VisitLongIdentWithDots longDotId, this.VisitSynExpr e2, range)
+            SynExpr.DotSet(this.VisitSynExpr expr, this.VisitLongIdentWithDots longDotId, this.VisitSynExpr e2, range)
         | SynExpr.Set(e1, e2, range) -> SynExpr.Set(this.VisitSynExpr e1, this.VisitSynExpr e2, range)
         | SynExpr.DotIndexedGet(objectExpr, indexExprs, dotRange, range) ->
             SynExpr.DotIndexedGet
@@ -174,8 +173,7 @@ type SyntaxVisitor() =
             SynExpr.JoinIn(this.VisitSynExpr expr, inrange, this.VisitSynExpr expr2, range)
         | SynExpr.ImplicitZero(range) -> SynExpr.ImplicitZero(range)
         | SynExpr.YieldOrReturn(info, expr, range) -> SynExpr.YieldOrReturn(info, this.VisitSynExpr expr, range)
-        | SynExpr.YieldOrReturnFrom(info, expr, range) ->
-            SynExpr.YieldOrReturnFrom(info, this.VisitSynExpr expr, range)
+        | SynExpr.YieldOrReturnFrom(info, expr, range) -> SynExpr.YieldOrReturnFrom(info, this.VisitSynExpr expr, range)
         | SynExpr.LetOrUseBang(seqPoint, isUse, isFromSource, pat, rhsExpr, bodyExpr, range) ->
             SynExpr.LetOrUseBang
                 (seqPoint, isUse, isFromSource, this.VisitSynPat pat, this.VisitSynExpr rhsExpr,
@@ -185,11 +183,10 @@ type SyntaxVisitor() =
         | SynExpr.DoBang(expr, range) -> SynExpr.DoBang(this.VisitSynExpr expr, range)
         | SynExpr.LibraryOnlyILAssembly(a, typs, exprs, typs2, range) ->
             SynExpr.LibraryOnlyILAssembly
-                (a, List.map this.VisitSynType typs, List.map this.VisitSynExpr exprs,
-                 List.map this.VisitSynType typs2, range)
+                (a, List.map this.VisitSynType typs, List.map this.VisitSynExpr exprs, List.map this.VisitSynType typs2,
+                 range)
         | SynExpr.LibraryOnlyStaticOptimization(constraints, expr1, expr2, range) ->
-            SynExpr.LibraryOnlyStaticOptimization
-                (constraints, this.VisitSynExpr expr1, this.VisitSynExpr expr2, range)
+            SynExpr.LibraryOnlyStaticOptimization(constraints, this.VisitSynExpr expr1, this.VisitSynExpr expr2, range)
         | SynExpr.LibraryOnlyUnionCaseFieldGet(expr, longId, i, range) ->
             SynExpr.LibraryOnlyUnionCaseFieldGet(this.VisitSynExpr expr, this.VisitLongIdent longId, i, range)
         | SynExpr.LibraryOnlyUnionCaseFieldSet(e1, longId, i, e2, range) ->
@@ -345,8 +342,7 @@ type SyntaxVisitor() =
 
     default this.VisitSynValData(svd: SynValData): SynValData =
         match svd with
-        | SynValData(flags, svi, ident) ->
-            SynValData(flags, this.VisitSynValInfo svi, Option.map this.VisitIdent ident)
+        | SynValData(flags, svi, ident) -> SynValData(flags, this.VisitSynValInfo svi, Option.map this.VisitIdent ident)
 
     abstract VisitSynValSig: SynValSig -> SynValSig
 
@@ -400,8 +396,8 @@ type SyntaxVisitor() =
         | SynPat.Wild(range) -> SynPat.Wild(range)
         | SynPat.Named(synPat, ident, isSelfIdentifier, access, range) ->
             SynPat.Named
-                (this.VisitSynPat synPat, this.VisitIdent ident, isSelfIdentifier,
-                 Option.map this.VisitSynAccess access, range)
+                (this.VisitSynPat synPat, this.VisitIdent ident, isSelfIdentifier, Option.map this.VisitSynAccess access,
+                 range)
         | SynPat.Typed(synPat, synType, range) ->
             SynPat.Typed(this.VisitSynPat synPat, this.VisitSynType synType, range)
         | SynPat.Attrib(synPat, attrs, range) ->
@@ -422,7 +418,7 @@ type SyntaxVisitor() =
                 (pats
                  |> List.map
                      (fun ((longIdent, ident), pat) ->
-                         ((this.VisitLongIdent longIdent, this.VisitIdent ident), this.VisitSynPat pat)), range)
+                     ((this.VisitLongIdent longIdent, this.VisitIdent ident), this.VisitSynPat pat)), range)
         | SynPat.Null(range) -> SynPat.Null(range)
         | SynPat.OptionalVal(ident, range) -> SynPat.OptionalVal(this.VisitIdent ident, range)
         | SynPat.IsInst(typ, range) -> SynPat.IsInst(this.VisitSynType typ, range)
@@ -541,8 +537,7 @@ type SyntaxVisitor() =
     default this.VisitSynUnionCaseType(uct: SynUnionCaseType): SynUnionCaseType =
         match uct with
         | UnionCaseFields(cases) -> UnionCaseFields(cases |> List.map this.VisitSynField)
-        | UnionCaseFullType(stype, valInfo) ->
-            UnionCaseFullType(this.VisitSynType stype, this.VisitSynValInfo valInfo)
+        | UnionCaseFullType(stype, valInfo) -> UnionCaseFullType(this.VisitSynType stype, this.VisitSynValInfo valInfo)
 
     abstract VisitSynEnumCase: SynEnumCase -> SynEnumCase
 

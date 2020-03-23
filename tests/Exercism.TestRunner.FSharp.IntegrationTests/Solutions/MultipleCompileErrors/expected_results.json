@@ -1,5 +1,5 @@
 {
   "status": "error",
-  "message": "FakeTests.fs:8: The value or constructor 'add' is not defined.\nFakeTests.fs:11: The value or constructor 'sub' is not defined. Maybe you want one of the following:\n   subsetOf",
+  "message": "FakeTests.fs:11: The value or constructor 'add' is not defined.\nFakeTests.fs:14: The value or constructor 'sub' is not defined. Maybe you want one of the following:\n   subsetOf",
   "tests": []
 }

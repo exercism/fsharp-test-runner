@@ -2,16 +2,16 @@
   "status": "fail",
   "tests": [
     {
-      "name": "FakeTest.Add should add numbers",
+      "name": "FakeTest+Tests.Add should add numbers",
       "status": "fail",
       "message": "Expected: Equals 3\nActual:   was 2"
     },
     {
-      "name": "FakeTest.Sub should subtract numbers",
+      "name": "FakeTest+Tests.Sub should subtract numbers",
       "status": "pass"
     },
     {
-      "name": "FakeTest.Mul should multiply numbers",
+      "name": "FakeTest+Tests.Mul should multiply numbers",
       "status": "fail",
       "message": "Expected: Equals 7\nActual:   was 6"
     }

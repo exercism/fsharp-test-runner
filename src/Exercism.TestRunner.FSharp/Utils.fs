@@ -14,7 +14,7 @@ module File =
 
 module Option =
     let ofNonEmptyString (str: string) =
-        if str = null || str = "" then None
+        if System.String.IsNullOrWhiteSpace(str) then None
         else Some str
 
     let toNullableString (opt: string option) = Option.defaultValue null opt
