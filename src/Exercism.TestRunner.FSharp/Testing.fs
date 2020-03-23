@@ -5,9 +5,16 @@ open Xunit
 open Xunit.Abstractions
 open Xunit.Sdk
 open Exercism.TestRunner.FSharp.Core
-open Exercism.TestRunner.FSharp.Utils
 open Exercism.TestRunner.FSharp.Compiler
 open FSharp.Compiler.SourceCodeServices
+
+module String = 
+    let normalize (str: string) = str.Replace("\r\n", "\n").Trim()
+    
+module Option =
+    let ofNonEmptyString (str: string) =
+        if System.String.IsNullOrWhiteSpace(str) then None
+        else Some str
 
 let private sourceInformationProvider = new NullSourceInformationProvider()
 let private diagnosticMessageSink = new TestMessageSink()
@@ -28,7 +35,7 @@ let private createTestAssemblyRunner testCases testAssembly =
     new XunitTestAssemblyRunner(testAssembly, testCases, diagnosticMessageSink, executionMessageSink,
                                 TestFrameworkOptions.ForExecution())
 
-let formatTestOutput output =
+let private formatTestOutput output =
     let truncate (str: string) =
         let maxLength = 500
 

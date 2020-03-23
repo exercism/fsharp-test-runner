@@ -6,7 +6,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="Utils.fs" />
     <Compile Include="Core.fs" />
     <Compile Include="Visitor.fs" />
     <Compile Include="Compiler.fs" />

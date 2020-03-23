@@ -3,7 +3,6 @@ module Exercism.TestRunner.FSharp.Compiler
 open Dotnet.ProjInfo.Workspace
 open Exercism.TestRunner.FSharp.Core
 open Exercism.TestRunner.FSharp.Visitor
-open Exercism.TestRunner.FSharp.Utils
 open FSharp.Compiler.Ast
 open System
 open System.IO
@@ -11,6 +10,24 @@ open System.Reflection
 open FSharp.Compiler.SourceCodeServices
 open FSharp.Compiler.Text
 open Fantomas
+
+module Process =
+    let exec fileName arguments workingDirectory =
+        let psi = System.Diagnostics.ProcessStartInfo()
+        psi.FileName <- fileName
+        psi.Arguments <- arguments
+        psi.WorkingDirectory <- workingDirectory
+        psi.CreateNoWindow <- true
+        psi.UseShellExecute <- false
+
+        use p = new System.Diagnostics.Process()
+        p.StartInfo <- psi
+
+        p.Start() |> ignore
+        p.WaitForExit()
+
+        if p.ExitCode = 0 then Result.Ok()
+        else Result.Error()
 
 type CompilerError =
     | ProjectNotFound

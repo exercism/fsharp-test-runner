@@ -4,7 +4,9 @@ open System.Text.Json
 open System.IO
 open System.Text.Json.Serialization
 open Exercism.TestRunner.FSharp.Core
-open Exercism.TestRunner.FSharp.Utils
+
+module Option =
+    let toNullableString (opt: string option) = Option.defaultValue null opt
 
 type JsonTestResult =
     { [<JsonPropertyName("name")>]
