@@ -6,6 +6,7 @@ obj/
 .vs/
 .vscode/
 .idea/
+.ionide/
 
 # User files
 *.suo
@@ -13,8 +14,9 @@ obj/
 *.userprefs
 
 # Package manager files
-.nuget
+.nuget/
 .packages/
+.fake/
 
 # Misc files
 *.DS_Store
