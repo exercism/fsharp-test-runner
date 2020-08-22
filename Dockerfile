@@ -15,11 +15,11 @@ COPY run.sh /opt/test-runner/bin/
 
 # Copy fsproj and restore as distinct layers
 COPY src/Exercism.TestRunner.FSharp/Exercism.TestRunner.FSharp.fsproj ./
-RUN dotnet restore
+RUN dotnet restore -r linux-musl-x64
 
 # Copy everything else and build
 COPY src/Exercism.TestRunner.FSharp/ ./
-RUN dotnet publish -r linux-musl-x64 -c Release -o /opt/test-runner
+RUN dotnet publish -r linux-musl-x64 -c Release -o /opt/test-runner --no-restore
 
 # Build runtime image
 FROM mcr.microsoft.com/dotnet/core/sdk:3.1-alpine AS runtime
