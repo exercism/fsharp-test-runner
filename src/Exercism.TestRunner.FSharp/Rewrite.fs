@@ -1,11 +1,20 @@
-module Exercism.TestRunner.FSharp.Compiler
+module Exercism.TestRunner.FSharp.Rewrite
 
 open Exercism.TestRunner.FSharp.Core
 open Exercism.TestRunner.FSharp.Visitor
 open FSharp.Compiler.Ast
 open System.IO
 open FSharp.Compiler.SourceCodeServices
+open FSharp.Compiler.Text
 open Fantomas
+
+type ParseResult =
+    | ParseSuccess of Code: string * Tree: ParsedInput
+    | ParseError
+
+type RewriteResult =
+    | RewriteSuccess of OriginalCode: string * RewrittenCode: string
+    | RewriteError
 
 type EnableAllTests() =
     inherit SyntaxVisitor()
@@ -261,27 +270,30 @@ type CaptureConsoleOutput() =
 
 let private checker = FSharpChecker.Create()
 
+let private parseSourceText (sourceText: string) (filePath: string) =    
+    let parseOptions =
+        { FSharpParsingOptions.Default with SourceFiles = [| filePath |] }
+
+    let parseResult =
+        checker.ParseFile(filePath, sourceText |> SourceText.ofString, parseOptions)
+        |> Async.RunSynchronously
+
+    parseResult.ParseTree
+
 let private parseFile (filePath: string) =
     if File.Exists(filePath) then
-        let parseOptions =
-            { FSharpParsingOptions.Default with
-                  SourceFiles = [| filePath |] }
-
-        let parseResult =
-            checker.ParseFile(filePath, File.ReadAllText(filePath) |> SourceText.ofString, parseOptions)
-            |> Async.RunSynchronously
-
-        match parseResult.ParseTree with
-        | Some tree -> Result.Ok tree
-        | None -> Result.Error TestsFileNotParsed
+        let sourceText = File.ReadAllText(filePath)
+        parseSourceText sourceText filePath
+        |> Option.map (fun tree -> ParseSuccess (sourceText, tree))
+        |> Option.defaultValue ParseError
     else
-        Result.Error TestsFileNotFound
+        ParseError
 
-let private treeToCode tree =
+let private toCode tree =
     CodeFormatter.FormatASTAsync(tree, "", [], None, FormatConfig.FormatConfig.Default)
     |> Async.RunSynchronously
 
-let private enableAllTests (context: TestRunContext) parsedInput =
+let private enableAllTests parsedInput =
     let visitors: SyntaxVisitor list =
         [ EnableAllTests()
           CaptureConsoleOutput() ]
@@ -290,7 +302,13 @@ let private enableAllTests (context: TestRunContext) parsedInput =
     |> List.fold (fun tree visitor -> visitor.VisitInput(tree)) parsedInput
 
 let rewriteTests (context: TestRunContext) =
-    parseFile context.TestsFile
-    |> Result.map (enableAllTests context)
-    |> Result.map treeToCode
-    |> Result.map (fun code -> File.WriteAllText(context.TestsFile, code))
+    match parseFile context.TestsFile with
+    | ParseSuccess (originalTestCode, originalTestTree) ->
+        let rewrittenTestCode =
+            originalTestTree
+            |> enableAllTests
+            |> toCode
+
+        RewriteSuccess(originalTestCode, rewrittenTestCode)        
+    | ParseError ->
+        RewriteError

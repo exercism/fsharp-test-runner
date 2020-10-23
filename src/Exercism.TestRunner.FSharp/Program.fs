@@ -25,8 +25,8 @@ let private createTestRunContext options =
     let (</>) left right = Path.Combine(left, right)
 
     { TestsFile       = options.InputDirectory  </> sprintf "%sTests.fs" exercise
-      TestResultsFile = options.InputDirectory  </> "msbuild.log"
-      BuildLogFile    = options.InputDirectory  </> "TestResults" </> "tests.trx"
+      TestResultsFile = options.InputDirectory  </> "TestResults" </> "tests.trx"
+      BuildLogFile    = options.InputDirectory  </> "msbuild.log"
       ResultsFile     = options.OutputDirectory </> "results.json" }
 
 let private runTestRunner options =

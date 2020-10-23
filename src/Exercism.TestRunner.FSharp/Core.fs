@@ -14,16 +14,10 @@ type TestResult =
 type TestRun =
     { Message: string option
       Status: TestStatus
-      Tests: TestResult list }
+      Tests: TestResult [] }
 
 type TestRunContext =
     { TestsFile: string
       TestResultsFile: string
       BuildLogFile: string
       ResultsFile: string }
-
-type TestRunError =
-    | ProjectNotFound
-    | TestsFileNotFound
-    | TestsFileNotParsed
-    | BuildError of string []
