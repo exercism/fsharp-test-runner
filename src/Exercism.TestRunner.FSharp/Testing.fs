@@ -60,29 +60,6 @@ let private testResultFromFailed (failedTest: ITestFailed) =
       Message = Some(failureToMessage failedTest.Messages)
       Output = formatTestOutput failedTest.Output }
 
-let private runTests (assembly: Assembly) =
-    // var command = "dotnet";
-    // var arguments = $"test --verbosity=quiet --logger \"trx;LogFileName={Path.GetFileName(_options.TestResultsFilePath)}\" /flp:v=q";
-
-    let assemblyInfo = Reflector.Wrap(assembly)
-    let testAssembly = TestAssembly(assemblyInfo)
-
-    let testResults = ResizeArray()
-    executionMessageSink.Execution.add_TestFailedEvent (fun args -> testResults.Add(testResultFromFailed (args.Message)))
-    executionMessageSink.Execution.add_TestPassedEvent (fun args -> testResults.Add(testResultFromPass (args.Message)))
-
-    let testCases = findTestCases assemblyInfo
-
-    use assemblyRunner =
-        createTestAssemblyRunner testCases testAssembly
-
-    assemblyRunner.RunAsync()
-    |> Async.AwaitTask
-    |> Async.RunSynchronously
-    |> ignore
-
-    Seq.toList testResults
-
 let private testRunStatusFromTest (tests: TestResult list) =
     let statuses =
         tests |> List.map (fun test -> test.Status) |> set
@@ -124,7 +101,8 @@ let private testRunFromTestRunnerError testRunnerError =
 
 let private testRunFromCompiledAssembly (assembly: Assembly) = assembly |> runTests |> testRunFromTests
 
-let testRunFromCompilationResult result =
-    match result with
-    | Result.Ok assembly -> testRunFromCompiledAssembly assembly
-    | Result.Error error -> testRunFromTestRunnerError error
+let runTests context =
+    failwith "Whoops"
+//    match result with
+//    | Result.Ok assembly -> testRunFromCompiledAssembly assembly
+//    | Result.Error error -> testRunFromTestRunnerError error

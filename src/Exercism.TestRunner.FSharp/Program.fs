@@ -16,30 +16,28 @@ type Options =
       [<Value(2, Required = true, HelpText = "The directory to which the results will be written")>]
       OutputDirectory: string }
 
+let private parseOptions argv =
+    match Parser.Default.ParseArguments<Options>(argv) with
+    | :? (Parsed<Options>) as options -> Some options.Value
+    | _ -> None
+
 let private createTestRunContext options =
     let exercise = options.Slug.Dehumanize().Pascalize()
 
-    let inputFile = Path.Combine(options.InputDirectory, sprintf "%s.fs" exercise)
     let testsFile = Path.Combine(options.InputDirectory, sprintf "%sTests.fs" exercise)
-    let projectFile = Path.Combine(options.InputDirectory, sprintf "%s.fsproj" exercise)
+    let testResultsFile = Path.Combine(options.InputDirectory, "msbuild.log")
+    let buildLogFile = Path.Combine(options.InputDirectory, "TestResults", "tests.trx")
     let resultsFile = Path.Combine(options.OutputDirectory, "results.json")
 
-    { InputFile = inputFile
-      TestsFile = testsFile
-      ProjectFile = projectFile
+    { TestsFile = testsFile
+      TestResultsFile = testResultsFile
+      BuildLogFile = buildLogFile
       ResultsFile = resultsFile }
 
 let private parseSuccess options =
     let context = createTestRunContext options
-    let result = compileProject context |> testRunFromCompilationResult
-
-    writeTestResults context result
-
-let private parseOptions argv =
-    let parserResult = CommandLine.Parser.Default.ParseArguments<Options>(argv)
-    match parserResult with
-    | :? (Parsed<Options>) as options -> Some options.Value
-    | _ -> None
+    let testRun = runTests context
+    writeTestResults context testRun
 
 [<EntryPoint>]
 let main argv =
