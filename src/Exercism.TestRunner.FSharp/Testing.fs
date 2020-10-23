@@ -8,12 +8,10 @@ open Exercism.TestRunner.FSharp.Rewrite
 
 module String =
     let normalize (str: string) = str.Replace("\r\n", "\n").Trim()
-
-module Process =
-    type ProcessResult =
-        | ProcessSuccess
-        | ProcessError
     
+    let isNullOrWhiteSpace = System.String.IsNullOrWhiteSpace
+
+module Process =    
     let exec fileName arguments workingDirectory =
         let psi = ProcessStartInfo(fileName, arguments)
         psi.WorkingDirectory <- workingDirectory
@@ -22,8 +20,6 @@ module Process =
         psi.RedirectStandardOutput <- true
         use p = Process.Start(psi)
         p.WaitForExit()
-
-        if p.ExitCode = 0 then ProcessSuccess else ProcessError
 
 module TestResults =
     [<AllowNullLiteral>]
@@ -81,10 +77,14 @@ module TestResults =
         | _ -> TestStatus.Error
 
     let private toMessage (xmlUnitTestResult: XmlUnitTestResult) =
+        let removeFsUnitExceptionFromMessage (message: string) =
+            message.Replace("FsUnit.Xunit+MatchException : Exception of type 'FsUnit.Xunit+MatchException' was thrown.", "")
+        
         xmlUnitTestResult.Output
         |> Option.ofObj
         |> Option.bind (fun output -> output.ErrorInfo |> Option.ofObj)
         |> Option.bind (fun errorInfo -> errorInfo.Message |> Option.ofObj)
+        |> Option.map removeFsUnitExceptionFromMessage
         |> Option.map String.normalize
 
     let private toOutput (xmlUnitTestResult: XmlUnitTestResult) =
@@ -108,7 +108,7 @@ module TestResults =
         |> Seq.sortBy (fun testResult -> testResult.Name)
         |> Seq.toArray
         
-    let parse context =        
+    let parse context =
         use fileStream = File.OpenRead(context.TestResultsFile)
         let result = XmlSerializer(typeof<XmlTestRun>).Deserialize(fileStream) :?> XmlTestRun
 
@@ -132,6 +132,7 @@ module DotnetCli =
     let private parseBuildErrors context =
         File.ReadLines(context.BuildLogFile)
         |> Seq.map normalizeBuildError
+        |> Seq.filter (fun logLine -> logLine |> String.isNullOrWhiteSpace |> not)
         |> Seq.toArray
         
     let private parseTestResults context =
@@ -139,11 +140,14 @@ module DotnetCli =
     
     let runTests context =
         let command = "dotnet"
-        let arguments = sprintf "test --verbosity=quiet --logger \"trx;LogFileName=%s\" /flp:v=q" (Path.GetFileName(context.TestResultsFile))
-        
-        match Process.exec command arguments (Path.GetDirectoryName(context.TestsFile)) with
-        | Process.ProcessSuccess -> TestRunSuccess (parseTestResults context)
-        | Process.ProcessError -> TestRunError (parseBuildErrors context)
+        let arguments = sprintf "test --verbosity=quiet --logger \"trx;LogFileName=%s\" /flp:v=q" (Path.GetFileName(context.TestResultsFile))        
+        Process.exec command arguments (Path.GetDirectoryName(context.TestsFile))
+
+        let buildErrors = parseBuildErrors context
+        if Array.isEmpty buildErrors then
+            TestRunSuccess (parseTestResults context)
+        else
+            TestRunError buildErrors
 
 let toTestStatus (testResults: TestResult[]) =
     let testStatuses =
@@ -177,8 +181,11 @@ let runTests context =
     match rewriteTests context with
     | RewriteSuccess (originalTestCode, rewrittenTestCode) ->
         try
-            File.WriteAllText(context.TestsFile, rewrittenTestCode)            
-            testResultsFromDotnetTest context
+            File.WriteAllText(context.TestsFile, rewrittenTestCode)
+
+            match DotnetCli.runTests context with
+            | DotnetCli.TestRunSuccess testResults -> testRunFromTestRunnerSuccess testResults
+            | DotnetCli.TestRunError errors -> testRunFromTestRunnerError errors      
         finally
             File.WriteAllText(context.TestsFile, originalTestCode)
     | RewriteError ->
