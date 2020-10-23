@@ -1,5 +1,6 @@
 module Exercism.TestRunner.FSharp.Testing
 
+open System.Diagnostics
 open System.Reflection
 open Xunit
 open Xunit.Abstractions
@@ -10,17 +11,12 @@ open FSharp.Compiler.SourceCodeServices
 
 module Process =
     let exec fileName arguments workingDirectory =
-        let psi = Diagnostics.ProcessStartInfo()
-        psi.FileName <- fileName
-        psi.Arguments <- arguments
+        let psi = ProcessStartInfo(fileName, arguments)
         psi.WorkingDirectory <- workingDirectory
-        psi.CreateNoWindow <- true
-        psi.UseShellExecute <- false
-
-        use p = new Diagnostics.Process()
-        p.StartInfo <- psi
-
-        p.Start() |> ignore
+        psi.RedirectStandardInput <- true
+        psi.RedirectStandardError <- true
+        psi.RedirectStandardOutput <- true
+        use p = Process.Start(psi)
         p.WaitForExit()
 
         if p.ExitCode = 0 then Result.Ok() else Result.Error()
@@ -31,30 +27,6 @@ module String =
 module Option =
     let ofNonEmptyString (str: string) =
         if System.String.IsNullOrWhiteSpace(str) then None else Some str
-
-let private sourceInformationProvider = new NullSourceInformationProvider()
-let private diagnosticMessageSink = new TestMessageSink()
-let private executionMessageSink = new TestMessageSink()
-
-let private findTestCases (assemblyInfo: IAssemblyInfo) =
-    use discoverySink = new TestDiscoverySink()
-
-    use discoverer =
-        new XunitTestFrameworkDiscoverer(assemblyInfo, sourceInformationProvider, diagnosticMessageSink)
-
-    discoverer.Find(false, discoverySink, TestFrameworkOptions.ForDiscovery())
-    discoverySink.Finished.WaitOne() |> ignore
-
-    discoverySink.TestCases
-    |> Seq.cast<IXunitTestCase>
-    |> Seq.toArray
-
-let private createTestAssemblyRunner testCases testAssembly =
-    new XunitTestAssemblyRunner(testAssembly,
-                                testCases,
-                                diagnosticMessageSink,
-                                executionMessageSink,
-                                TestFrameworkOptions.ForExecution())
 
 let private formatTestOutput output =
     let truncate (str: string) =
@@ -89,6 +61,9 @@ let private testResultFromFailed (failedTest: ITestFailed) =
       Output = formatTestOutput failedTest.Output }
 
 let private runTests (assembly: Assembly) =
+    // var command = "dotnet";
+    // var arguments = $"test --verbosity=quiet --logger \"trx;LogFileName={Path.GetFileName(_options.TestResultsFilePath)}\" /flp:v=q";
+
     let assemblyInfo = Reflector.Wrap(assembly)
     let testAssembly = TestAssembly(assemblyInfo)
 

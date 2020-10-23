@@ -22,6 +22,16 @@ type TestRunContext =
       ProjectFile: string
       ResultsFile: string }
 
+//  public string TestsFilePath => Path.Combine(InputDirectory, $"{Exercise}Tests.cs");
+
+//         public string BuildLogFilePath => Path.Combine(InputDirectory, "msbuild.log");
+
+//         public string TestResultsFilePath => Path.Combine(InputDirectory, "TestResults", "tests.trx");
+
+//         public string ResultsJsonFilePath => Path.GetFullPath(Path.Combine(OutputDirectory, "results.json"));
+
+//         private string Exercise => Slug.Dehumanize().Pascalize();
+
 type TestRunError =
     | ProjectNotFound
     | TestsFileNotFound
