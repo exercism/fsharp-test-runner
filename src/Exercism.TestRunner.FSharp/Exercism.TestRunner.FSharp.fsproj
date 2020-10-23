@@ -6,6 +6,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <RuntimeHostConfigurationOption Include="System.Globalization.Invariant" Value="true" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Compile Include="Core.fs" />
     <Compile Include="Visitor.fs" />
     <Compile Include="Rewrite.fs" />
