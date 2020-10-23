@@ -5,7 +5,6 @@ open CommandLine
 open Humanizer
 open Exercism.TestRunner.FSharp.Core
 open Exercism.TestRunner.FSharp.Testing
-open Exercism.TestRunner.FSharp.Compiler
 open Exercism.TestRunner.FSharp.Output
 
 type Options =
@@ -23,24 +22,23 @@ let private parseOptions argv =
 
 let private createTestRunContext options =
     let exercise = options.Slug.Dehumanize().Pascalize()
+    let (</>) left right = Path.Combine(left, right)
 
-    let testsFile = Path.Combine(options.InputDirectory, sprintf "%sTests.fs" exercise)
-    let testResultsFile = Path.Combine(options.InputDirectory, "msbuild.log")
-    let buildLogFile = Path.Combine(options.InputDirectory, "TestResults", "tests.trx")
-    let resultsFile = Path.Combine(options.OutputDirectory, "results.json")
+    { TestsFile       = options.InputDirectory  </> sprintf "%sTests.fs" exercise
+      TestResultsFile = options.InputDirectory  </> "msbuild.log"
+      BuildLogFile    = options.InputDirectory  </> "TestResults" </> "tests.trx"
+      ResultsFile     = options.OutputDirectory </> "results.json" }
 
-    { TestsFile = testsFile
-      TestResultsFile = testResultsFile
-      BuildLogFile = buildLogFile
-      ResultsFile = resultsFile }
-
-let private parseSuccess options =
+let private runTestRunner options =
     let context = createTestRunContext options
     let testRun = runTests context
     writeTestResults context testRun
 
 [<EntryPoint>]
 let main argv =
-    match parseOptions argv |> Option.map parseSuccess with
-    | Some _ -> 0
-    | None -> 1
+    match parseOptions argv with
+    | Some options ->
+        runTestRunner options
+        0
+    | None ->
+        1

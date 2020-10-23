@@ -2,11 +2,8 @@ module Exercism.TestRunner.FSharp.Testing
 
 open System.Diagnostics
 open System.Reflection
-open Xunit
 open Xunit.Abstractions
-open Xunit.Sdk
 open Exercism.TestRunner.FSharp.Core
-open Exercism.TestRunner.FSharp.Compiler
 open FSharp.Compiler.SourceCodeServices
 
 module Process =
