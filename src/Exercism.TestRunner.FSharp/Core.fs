@@ -21,3 +21,9 @@ type TestRunContext =
       TestsFile: string
       ProjectFile: string
       ResultsFile: string }
+
+type TestRunError =
+    | ProjectNotFound
+    | TestsFileNotFound
+    | TestsFileNotParsed
+    | BuildError of string []

@@ -1,43 +1,16 @@
 module Exercism.TestRunner.FSharp.Compiler
 
-open Dotnet.ProjInfo.Workspace
 open Exercism.TestRunner.FSharp.Core
 open Exercism.TestRunner.FSharp.Visitor
 open FSharp.Compiler.Ast
-open System
 open System.IO
-open System.Reflection
 open FSharp.Compiler.SourceCodeServices
-open FSharp.Compiler.Text
 open Fantomas
-
-module Process =
-    let exec fileName arguments workingDirectory =
-        let psi = Diagnostics.ProcessStartInfo()
-        psi.FileName <- fileName
-        psi.Arguments <- arguments
-        psi.WorkingDirectory <- workingDirectory
-        psi.CreateNoWindow <- true
-        psi.UseShellExecute <- false
-
-        use p = new Diagnostics.Process()
-        p.StartInfo <- psi
-
-        p.Start() |> ignore
-        p.WaitForExit()
-
-        if p.ExitCode = 0 then Result.Ok() else Result.Error()
-
-type CompilerError =
-    | ProjectNotFound
-    | TestsFileNotFound
-    | CompilationFailed
-    | CompilationError of FSharpErrorInfo []
 
 type EnableAllTests() =
     inherit SyntaxVisitor()
 
-    override this.VisitSynAttribute(attr: SynAttribute): SynAttribute =
+    override __.VisitSynAttribute(attr: SynAttribute): SynAttribute =
         match attr.TypeName with
         | LongIdentWithDots ([ ident ], _) when ident.idText = "Fact" ->
             base.VisitSynAttribute
@@ -106,16 +79,16 @@ type CaptureConsoleOutput() =
                               SynExpr.Const(SynConst.Unit, range),
                               range),
                          range,
-                         SequencePointInfoForBinding.NoSequencePointAtLetBinding) ],
+                         NoSequencePointAtLetBinding) ],
                      false,
                      false,
                      range)
 
             let captureOutput =
                 SynMemberDefn.LetBindings
-                    ([ SynBinding.Binding
+                    ([ Binding
                         (None,
-                         SynBindingKind.DoBinding,
+                         DoBinding,
                          false,
                          false,
                          [],
@@ -124,7 +97,7 @@ type CaptureConsoleOutput() =
                          SynPat.Const(SynConst.Unit, range),
                          None,
                          SynExpr.Sequential
-                             (SequencePointInfoForSeq.SequencePointsAtSeq,
+                             (SequencePointsAtSeq,
                               true,
                               SynExpr.App
                                   (ExprAtomicFlag.Atomic,
@@ -139,7 +112,7 @@ type CaptureConsoleOutput() =
                                    SynExpr.Paren(SynExpr.Ident(ident "stringWriter"), range, None, range),
                                    range),
                               SynExpr.Sequential
-                                  (SequencePointInfoForSeq.SequencePointsAtSeq,
+                                  (SequencePointsAtSeq,
                                    true,
                                    SynExpr.App
                                        (ExprAtomicFlag.Atomic,
@@ -191,7 +164,7 @@ type CaptureConsoleOutput() =
                                    range),
                               range),
                          range,
-                         SequencePointInfoForBinding.NoSequencePointAtDoBinding) ],
+                         NoSequencePointAtDoBinding) ],
                      false,
                      false,
                      range)
@@ -203,14 +176,14 @@ type CaptureConsoleOutput() =
                                              "IDisposable" ]),
                      Some
                          ([ SynMemberDefn.Member
-                             (SynBinding.Binding
+                             (Binding
                                  (None,
-                                  SynBindingKind.NormalBinding,
+                                  NormalBinding,
                                   false,
                                   false,
                                   [],
                                   PreXmlDoc.Empty,
-                                  SynValData.SynValData
+                                  SynValData
                                       (Some
                                           ({ IsInstance = true
                                              IsDispatchSlot = false
@@ -223,8 +196,7 @@ type CaptureConsoleOutput() =
                                       (longIdentWithDots [ "__"; "Dispose" ],
                                        None,
                                        None,
-                                       SynConstructorArgs.Pats
-                                           ([ SynPat.Paren(SynPat.Const(SynConst.Unit, range), range) ]),
+                                       Pats([ SynPat.Paren(SynPat.Const(SynConst.Unit, range), range) ]),
                                        None,
                                        range),
                                   None,
@@ -256,7 +228,7 @@ type CaptureConsoleOutput() =
                                            ),
                                        range),
                                   range,
-                                  SequencePointInfoForBinding.NoSequencePointAtInvisibleBinding),
+                                  NoSequencePointAtInvisibleBinding),
                               range) ]),
                      range)
 
@@ -266,7 +238,7 @@ type CaptureConsoleOutput() =
                         ([ TypeDefn
                             (ComponentInfo([], [], [], [ ident "Tests" ], doc, false, None, range),
                              SynTypeDefnRepr.ObjectModel
-                                 (SynTypeDefnKind.TyconClass,
+                                 (TyconClass,
                                   letDeclBindings
                                   @ [ constructor
                                       stringWriter
@@ -289,66 +261,21 @@ type CaptureConsoleOutput() =
 
 let private checker = FSharpChecker.Create()
 
-let private msBuildLocator = MSBuildLocator()
+let private parseFile (filePath: string) =
+    if File.Exists(filePath) then
+        let parseOptions =
+            { FSharpParsingOptions.Default with
+                  SourceFiles = [| filePath |] }
 
-let private loaderConfig = LoaderConfig.Default msBuildLocator
+        let parseResult =
+            checker.ParseFile(filePath, File.ReadAllText(filePath) |> SourceText.ofString, parseOptions)
+            |> Async.RunSynchronously
 
-let private loader = Loader.Create(loaderConfig)
-
-let private infoConfig = NetFWInfoConfig.Default msBuildLocator
-
-let private netFwInfo = NetFWInfo.Create(infoConfig)
-
-let private binder =
-    FCS.FCSBinder(netFwInfo, loader, checker)
-
-let private dotnetRestore (projectFile: string) =
-    if not (File.Exists projectFile) then
-        Result.Error ProjectNotFound
+        match parseResult.ParseTree with
+        | Some tree -> Result.Ok tree
+        | None -> Result.Error TestsFileNotParsed
     else
-        let homeDir =
-            Environment.GetFolderPath(Environment.SpecialFolder.UserProfile)
-
-        let nugetDir = Path.Combine(homeDir, ".nuget")
-        let arguments = sprintf "restore -s %s" nugetDir
-        let workingDir = Path.GetDirectoryName projectFile
-        Process.exec "dotnet" arguments workingDir
-        |> Result.mapError (fun _ -> CompilationFailed)
-
-let getProjectOptions (context: TestRunContext) =
-    dotnetRestore context.ProjectFile
-    |> Result.bind (fun _ ->
-        loader.LoadProjects [ context.ProjectFile ]
-        |> ignore
-        binder.GetProjectOptions(context.ProjectFile)
-        |> Result.mapError (fun _ -> CompilationFailed))
-
-let getParseOptions (projectOptions: FCS.FCS_ProjectOptions) =
-    match checker.GetParsingOptionsFromProjectOptions(projectOptions) with
-    | parseOptions, [] -> Result.Ok parseOptions
-    | _, _ -> Result.Error CompilationFailed
-
-let private getCompileOptions (projectOptions: FCS.FCS_ProjectOptions) =
-    projectOptions.SourceFiles
-    |> Array.collect (fun x -> [| "-a"; x |])
-    |> Array.append projectOptions.OtherOptions
-    |> Array.append [| "fcs.exe" |]
-
-let private assemblyFilePath (compileOptions: string []) =
-    let outputCompileOption =
-        compileOptions
-        |> Array.find (fun compileOption -> compileOption.StartsWith("-o:"))
-
-    outputCompileOption.[3..]
-
-let private parseFile (filePath: string) (parseOptions: FSharpParsingOptions) =
-    let parsedResult =
-        checker.ParseFile(filePath, File.ReadAllText(filePath) |> SourceText.ofString, parseOptions)
-        |> Async.RunSynchronously
-
-    match parsedResult.ParseTree with
-    | Some tree -> Result.Ok tree
-    | None -> Result.Error CompilationFailed
+        Result.Error TestsFileNotFound
 
 let private treeToCode tree =
     CodeFormatter.FormatASTAsync(tree, "", [], None, FormatConfig.FormatConfig.Default)
@@ -359,40 +286,11 @@ let private enableAllTests (context: TestRunContext) parsedInput =
         [ EnableAllTests()
           CaptureConsoleOutput() ]
 
-    let visited =
-        visitors
-        |> List.fold (fun tree visitor -> visitor.VisitInput(tree)) parsedInput
+    visitors
+    |> List.fold (fun tree visitor -> visitor.VisitInput(tree)) parsedInput
 
-    let code = treeToCode visited
-    File.WriteAllText(context.TestsFile, code)
-
-let private rewriteSyntax (context: TestRunContext) (projectOptions: FCS.FCS_ProjectOptions) =
-    if File.Exists(context.TestsFile) then
-        getParseOptions projectOptions
-        |> Result.bind (parseFile context.TestsFile)
-        |> Result.map (enableAllTests context)
-        |> Result.map (fun _ -> projectOptions)
-    else
-        Result.Error TestsFileNotFound
-
-let private compile (projectOptions: FCS.FCS_ProjectOptions) =
-    let compileFromOptions compileOptions =
-        let errors, _ =
-            checker.Compile(compileOptions)
-            |> Async.RunSynchronously
-
-        let nonWarningErrors =
-            errors
-            |> Array.filter (fun error -> error.Severity = FSharpErrorSeverity.Error)
-
-        if Array.isEmpty nonWarningErrors
-        then Result.Ok(Assembly.LoadFile(assemblyFilePath compileOptions))
-        else Result.Error(CompilationError nonWarningErrors)
-
-    getCompileOptions projectOptions
-    |> compileFromOptions
-
-let compileProject (context: TestRunContext) =
-    getProjectOptions context
-    |> Result.bind (rewriteSyntax context)
-    |> Result.bind compile
+let rewriteTests (context: TestRunContext) =
+    parseFile context.TestsFile
+    |> Result.map (enableAllTests context)
+    |> Result.map treeToCode
+    |> Result.map (fun code -> File.WriteAllText(context.TestsFile, code))
