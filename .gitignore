@@ -27,3 +27,6 @@ obj/
 # Application files
 results.json
 results.trx
+
+# SDK files
+global.json
