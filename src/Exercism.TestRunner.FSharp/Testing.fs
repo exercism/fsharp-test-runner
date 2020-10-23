@@ -139,20 +139,11 @@ module DotnetCli =
     
     let runTests context =
         let command = "dotnet"
-        let arguments = sprintf "test --verbosity=quiet --logger \"trx;LogFileName=%s\" /flp:v=q" (Path.GetFileName(context.BuildLogFile))
-        
-         
+        let arguments = sprintf "test --verbosity=quiet --logger \"trx;LogFileName=%s\" /flp:v=q" (Path.GetFileName(context.TestResultsFile))
         
         match Process.exec command arguments (Path.GetDirectoryName(context.TestsFile)) with
         | Process.ProcessSuccess -> TestRunSuccess (parseTestResults context)
         | Process.ProcessError -> TestRunError (parseBuildErrors context)
-
-//let private failureToMessage messages =
-//    messages
-//    |> Array.map String.normalize
-//    |> Array.map (fun message ->
-//        message.Replace("Exception of type 'FsUnit.Xunit+MatchException' was thrown.\n", "").Trim())
-//    |> String.concat "\n"
 
 let toTestStatus (testResults: TestResult[]) =
     let testStatuses =
