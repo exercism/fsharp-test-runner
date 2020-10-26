@@ -1,5 +1,6 @@
 module Exercism.TestRunner.FSharp.Program
 
+open System
 open System.IO
 open CommandLine
 open Humanizer
@@ -35,13 +36,15 @@ let private createTestRunContext options =
       ResultsFile = options.OutputDirectory </> "results.json" }
 
 let private runTestRunner options =
-    printfn "Running test runner for '%s' solution..." options.Slug
+    let currentDate () = DateTimeOffset.UtcNow.ToString("u")
+
+    printfn "[%s] Running test runner for '%s' solution..." (currentDate ()) options.Slug
 
     let context = createTestRunContext options
     let testRun = runTests context
     writeTestResults context testRun
 
-    printfn "Ran test runner for '%s' solution" options.Slug
+    printfn "[%s] Ran test runner for '%s' solution" (currentDate ()) options.Slug
 
 [<EntryPoint>]
 let main argv =
