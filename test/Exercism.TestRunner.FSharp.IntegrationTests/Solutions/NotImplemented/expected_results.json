@@ -1,0 +1,10 @@
+{
+  "status": "fail",
+  "tests": [
+    {
+      "name": "FakeTests.Add should add numbers",
+      "status": "fail",
+      "message": "System.Exception : Please implement the add function"
+    }
+  ]
+}

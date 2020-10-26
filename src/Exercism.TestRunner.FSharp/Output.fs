@@ -5,9 +5,6 @@ open System.IO
 open System.Text.Json.Serialization
 open Exercism.TestRunner.FSharp.Core
 
-module Option =
-    let toNullableString (opt: string option) = Option.defaultValue null opt
-
 type JsonTestResult =
     { [<JsonPropertyName("name")>]
       Name: string
@@ -29,6 +26,7 @@ type JsonTestRun =
 let private jsonSerializerOptions = JsonSerializerOptions()
 
 jsonSerializerOptions.IgnoreNullValues <- true
+jsonSerializerOptions.WriteIndented <- true
 
 let private toJsonTestStatus (testStatus: TestStatus) =
     match testStatus with
@@ -38,16 +36,20 @@ let private toJsonTestStatus (testStatus: TestStatus) =
 
 let private toJsonTestResult (testResult: TestResult) =
     { Name = testResult.Name
-      Message = Option.toNullableString testResult.Message
-      Output = Option.toNullableString testResult.Output
+      Message = testResult.Message |> Option.toObj
+      Output = testResult.Output |> Option.toObj
       Status = toJsonTestStatus testResult.Status }
 
 let private toJsonTestRun (testRun: TestRun) =
-    { Message = Option.toNullableString testRun.Message
+    { Message = testRun.Message |> Option.toObj
       Status = toJsonTestStatus testRun.Status
-      Tests = List.map toJsonTestResult testRun.Tests |> List.toArray }
+      Tests =
+          testRun.Tests
+          |> Seq.map toJsonTestResult
+          |> Seq.toArray }
 
 let private serializeTestResults (testRun: TestRun) =
     JsonSerializer.Serialize(toJsonTestRun testRun, jsonSerializerOptions)
 
-let writeTestResults context testRun = File.WriteAllText(context.ResultsFile, serializeTestResults testRun)
+let writeTestResults context testRun =
+    File.WriteAllText(context.ResultsFile, serializeTestResults testRun)

@@ -1,0 +1,18 @@
+{
+  "status": "fail",
+  "tests": [
+    {
+      "name": "FakeTests.Add should add numbers",
+      "status": "pass"
+    },
+    {
+      "name": "FakeTests.Mul should multiply numbers",
+      "status": "fail",
+      "message": "Expected: Equals 5\nActual:   was 6"
+    },
+    {
+      "name": "FakeTests.Sub should subtract numbers",
+      "status": "pass"
+    }
+  ]
+}

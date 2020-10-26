@@ -6,9 +6,13 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <RuntimeHostConfigurationOption Include="System.Globalization.Invariant" Value="true" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Compile Include="Core.fs" />
     <Compile Include="Visitor.fs" />
-    <Compile Include="Compiler.fs" />
+    <Compile Include="Rewrite.fs" />
     <Compile Include="Testing.fs" />
     <Compile Include="Output.fs" />
     <Compile Include="Program.fs" />
@@ -16,13 +20,8 @@
 
   <ItemGroup>
     <PackageReference Include="CommandLineParser" Version="2.7.82" />
-    <PackageReference Include="Dotnet.ProjInfo.Workspace.FCS" Version="0.37.0" />
     <PackageReference Include="Fantomas" Version="3.2.0" />
     <PackageReference Include="Humanizer.Core" Version="2.7.9" />
-    <PackageReference Include="Microsoft.Build.Locator" Version="1.2.6" />
-    <PackageReference Include="xunit" Version="2.4.1" />
-    <PackageReference Include="xunit.extensibility.execution" Version="2.4.1" />
-    <PackageReference Include="xunit.runner.utility" Version="2.4.1" />
     <PackageReference Include="FsUnit.xUnit" Version="3.8.0" />
   </ItemGroup>
 

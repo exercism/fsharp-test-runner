@@ -1,0 +1,13 @@
+{
+  "status": "pass",
+  "tests": [
+    {
+      "name": "FakeTests.Add should add numbers",
+      "status": "pass"
+    },
+    {
+      "name": "FakeTests.Sub_should_subtract_numbers",
+      "status": "pass"
+    }
+  ]
+}

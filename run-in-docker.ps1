@@ -29,4 +29,10 @@ param (
 )
 
 docker build -t exercism/fsharp-test-runner .
-docker run --network none -v ${InputDirectory}:/solution -v ${OutputDirectory}:/results exercism/fsharp-test-runner $Exercise /solution /results
+docker run `
+  --network none `
+  --read-only `
+  --mount type=bind,src=${InputDirectory},dst=/input/ `
+  --mount type=bind,src=${OutputDirectory},dst=/output/ `
+  --mount type=tmpfs,dst=/tmp `
+  exercism/fsharp-test-runner $Exercise /input /output

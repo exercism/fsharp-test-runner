@@ -1,137 +1,208 @@
 module Exercism.TestRunner.FSharp.Testing
 
-open System.Reflection
-open Xunit
-open Xunit.Abstractions
-open Xunit.Sdk
+open System.Diagnostics
+open System.IO
+open System.Xml.Serialization
 open Exercism.TestRunner.FSharp.Core
-open Exercism.TestRunner.FSharp.Compiler
-open FSharp.Compiler.SourceCodeServices
+open Exercism.TestRunner.FSharp.Rewrite
 
-module String = 
+module String =
     let normalize (str: string) = str.Replace("\r\n", "\n").Trim()
-    
-module Option =
-    let ofNonEmptyString (str: string) =
-        if System.String.IsNullOrWhiteSpace(str) then None
-        else Some str
 
-let private sourceInformationProvider = new NullSourceInformationProvider()
-let private diagnosticMessageSink = new TestMessageSink()
-let private executionMessageSink = new TestMessageSink()
+    let isNullOrWhiteSpace = System.String.IsNullOrWhiteSpace
 
-let private findTestCases (assemblyInfo: IAssemblyInfo) =
-    use discoverySink = new TestDiscoverySink()
-    use discoverer = new XunitTestFrameworkDiscoverer(assemblyInfo, sourceInformationProvider, diagnosticMessageSink)
+module Process =
+    let exec fileName arguments workingDirectory =
+        let psi = ProcessStartInfo(fileName, arguments)
+        psi.WorkingDirectory <- workingDirectory
+        psi.RedirectStandardInput <- true
+        psi.RedirectStandardError <- true
+        psi.RedirectStandardOutput <- true
+        use p = Process.Start(psi)
+        p.WaitForExit()
 
-    discoverer.Find(false, discoverySink, TestFrameworkOptions.ForDiscovery())
-    discoverySink.Finished.WaitOne() |> ignore
+module TestResults =
+    [<AllowNullLiteral>]
+    [<XmlRoot(ElementName = "ErrorInfo", Namespace = "http://microsoft.com/schemas/VisualStudio/TeamTest/2010")>]
+    type XmlErrorInfo() =
+        [<XmlElement(ElementName = "Message", Namespace = "http://microsoft.com/schemas/VisualStudio/TeamTest/2010")>]
+        member val Message: string = null with get, set
 
-    discoverySink.TestCases
-    |> Seq.cast<IXunitTestCase>
-    |> Seq.toArray
+    [<AllowNullLiteral>]
+    [<XmlRoot(ElementName = "Output", Namespace = "http://microsoft.com/schemas/VisualStudio/TeamTest/2010")>]
+    type XmlOutput() =
+        [<XmlElement(ElementName = "StdOut", Namespace = "http://microsoft.com/schemas/VisualStudio/TeamTest/2010")>]
+        member val StdOut: string = null with get, set
 
-let private createTestAssemblyRunner testCases testAssembly =
-    new XunitTestAssemblyRunner(testAssembly, testCases, diagnosticMessageSink, executionMessageSink,
-                                TestFrameworkOptions.ForExecution())
 
-let private formatTestOutput output =
+        [<XmlElement(ElementName = "ErrorInfo", Namespace = "http://microsoft.com/schemas/VisualStudio/TeamTest/2010")>]
+        member val ErrorInfo: XmlErrorInfo = null with get, set
+
+    [<AllowNullLiteral>]
+    [<XmlRoot(ElementName = "UnitTestResult", Namespace = "http://microsoft.com/schemas/VisualStudio/TeamTest/2010")>]
+    type XmlUnitTestResult() =
+        [<XmlElement(ElementName = "Output", Namespace = "http://microsoft.com/schemas/VisualStudio/TeamTest/2010")>]
+        member val Output: XmlOutput = null with get, set
+
+        [<XmlAttribute(AttributeName = "testName")>]
+        member val TestName: string = null with get, set
+
+        [<XmlAttribute(AttributeName = "outcome")>]
+        member val Outcome: string = null with get, set
+
+    [<AllowNullLiteral>]
+    [<XmlRoot(ElementName = "Results", Namespace = "http://microsoft.com/schemas/VisualStudio/TeamTest/2010")>]
+    type XmlResults() =
+        [<XmlElement(ElementName = "UnitTestResult",
+                     Namespace = "http://microsoft.com/schemas/VisualStudio/TeamTest/2010")>]
+        member val UnitTestResult: XmlUnitTestResult [] = null with get, set
+
+    [<XmlRoot(ElementName = "TestRun", Namespace = "http://microsoft.com/schemas/VisualStudio/TeamTest/2010")>]
+    type XmlTestRun() =
+        [<XmlElement(ElementName = "Results", Namespace = "http://microsoft.com/schemas/VisualStudio/TeamTest/2010")>]
+        member val Results: XmlResults = null with get, set
+
     let truncate (str: string) =
         let maxLength = 500
 
-        if str.Length > maxLength then
-            sprintf "%s\nOutput was truncated. Please limit to %d chars." str.[0..maxLength] maxLength
+        if str.Length > maxLength
+        then sprintf "%s\nOutput was truncated. Please limit to %d chars." str.[0..maxLength] maxLength
+        else str
+
+    let private toName (xmlUnitTestResult: XmlUnitTestResult) =
+        xmlUnitTestResult.TestName.Replace("+Tests", "")
+
+    let private toStatus (xmlUnitTestResult: XmlUnitTestResult) =
+        match xmlUnitTestResult.Outcome with
+        | "Passed" -> TestStatus.Pass
+        | "Failed" -> TestStatus.Fail
+        | _ -> TestStatus.Error
+
+    let private toMessage (xmlUnitTestResult: XmlUnitTestResult) =
+        let removeFsUnitExceptionFromMessage (message: string) =
+            message.Replace
+                ("FsUnit.Xunit+MatchException : Exception of type 'FsUnit.Xunit+MatchException' was thrown.", "")
+
+        xmlUnitTestResult.Output
+        |> Option.ofObj
+        |> Option.bind (fun output -> output.ErrorInfo |> Option.ofObj)
+        |> Option.bind (fun errorInfo -> errorInfo.Message |> Option.ofObj)
+        |> Option.map removeFsUnitExceptionFromMessage
+        |> Option.map String.normalize
+
+    let private toOutput (xmlUnitTestResult: XmlUnitTestResult) =
+        xmlUnitTestResult.Output
+        |> Option.ofObj
+        |> Option.bind (fun output -> output.StdOut |> Option.ofObj)
+        |> Option.map String.normalize
+        |> Option.map truncate
+
+    let private toTestResult (xmlUnitTestResult: XmlUnitTestResult) =
+        { Name = xmlUnitTestResult |> toName
+          Status = xmlUnitTestResult |> toStatus
+          Message = xmlUnitTestResult |> toMessage
+          Output = xmlUnitTestResult |> toOutput }
+
+    let private toTestResults xmlUnitTestResults =
+        xmlUnitTestResults
+        |> Seq.map toTestResult
+        |> Seq.sortBy (fun testResult -> testResult.Name)
+        |> Seq.toArray
+
+    let parse context =
+        use fileStream = File.OpenRead(context.TestResultsFile)
+
+        let result =
+            XmlSerializer(typeof<XmlTestRun>)
+                .Deserialize(fileStream) :?> XmlTestRun
+
+        result.Results
+        |> Option.ofObj
+        |> Option.bind (fun results -> results.UnitTestResult |> Option.ofObj)
+        |> Option.map toTestResults
+        |> Option.defaultValue Array.empty
+
+module DotnetCli =
+    type DotnetTestResult =
+        | TestRunSuccess of TestResult []
+        | TestRunError of string []
+
+    let private removePaths (error: string) =
+        let testsFsIndex = error.IndexOf("Tests.fs")
+
+        if testsFsIndex = -1 then
+            error
         else
-            str
+            let lastPathIndex =
+                error.LastIndexOf(Path.DirectorySeparatorChar, testsFsIndex)
 
-    output
-    |> String.normalize
-    |> Option.ofNonEmptyString
-    |> Option.map truncate
+            if lastPathIndex = -1 then error else error.[lastPathIndex + 1..]
 
-let private testResultFromPass (passedTest: ITestPassed) =
-    { Name = passedTest.TestCase.DisplayName
-      Status = TestStatus.Pass
-      Message = None
-      Output = formatTestOutput passedTest.Output }
+    let private removeProjectReference (error: string) = error.[0..(error.LastIndexOf('[') - 1)]
 
-let private failureToMessage messages =
-    messages
-    |> Array.map String.normalize
-    |> Array.map
-        (fun message -> message.Replace("Exception of type 'FsUnit.Xunit+MatchException' was thrown.\n", "").Trim())
-    |> String.concat "\n"
+    let private normalizeBuildError error =
+        error
+        |> removeProjectReference
+        |> removePaths
+        |> String.normalize
 
-let private testResultFromFailed (failedTest: ITestFailed) =
-    { Name = failedTest.TestCase.DisplayName
-      Status = TestStatus.Fail
-      Message = Some(failureToMessage failedTest.Messages)
-      Output = formatTestOutput failedTest.Output }
+    let private parseBuildErrors context =
+        File.ReadLines(context.BuildLogFile)
+        |> Seq.map normalizeBuildError
+        |> Seq.filter (fun logLine -> logLine |> String.isNullOrWhiteSpace |> not)
+        |> Seq.toArray
 
-let private runTests (assembly: Assembly) =
-    let assemblyInfo = Reflector.Wrap(assembly)
-    let testAssembly = TestAssembly(assemblyInfo)
+    let private parseTestResults context = TestResults.parse context
 
-    let testResults = ResizeArray()
-    executionMessageSink.Execution.add_TestFailedEvent
-        (fun args -> testResults.Add(testResultFromFailed (args.Message)))
-    executionMessageSink.Execution.add_TestPassedEvent (fun args -> testResults.Add(testResultFromPass (args.Message)))
+    let runTests context =
+        let command = "dotnet"
 
-    let testCases = findTestCases assemblyInfo
+        let arguments =
+            sprintf
+                "test --verbosity=quiet --logger \"trx;LogFileName=%s\" /flp:v=q"
+                (Path.GetFileName(context.TestResultsFile))
 
-    use assemblyRunner = createTestAssemblyRunner testCases testAssembly
-    assemblyRunner.RunAsync()
-    |> Async.AwaitTask
-    |> Async.RunSynchronously
-    |> ignore
+        Process.exec command arguments (Path.GetDirectoryName(context.TestsFile))
 
-    Seq.toList testResults
+        let buildErrors = parseBuildErrors context
+        if Array.isEmpty buildErrors then TestRunSuccess(parseTestResults context) else TestRunError buildErrors
 
-let private testRunStatusFromTest (tests: TestResult list) =
-    let statuses =
-        tests
-        |> List.map (fun test -> test.Status)
-        |> set
+let toTestStatus (testResults: TestResult []) =
+    let testStatuses =
+        testResults
+        |> Seq.map (fun testResult -> testResult.Status)
+        |> Set.ofSeq
 
-    if Set.contains Fail statuses then Fail
-    elif Set.singleton Pass = statuses then Pass
-    else Error
+    if testStatuses = Set.singleton TestStatus.Pass
+    then TestStatus.Pass
+    elif Set.contains TestStatus.Fail testStatuses
+    then TestStatus.Fail
+    else TestStatus.Error
 
-let private testRunFromTests tests =
+let private testRunFromTestRunnerSuccess testResults =
     { Message = None
-      Status = testRunStatusFromTest tests
-      Tests = tests }
+      Status = testResults |> toTestStatus
+      Tests = testResults }
 
-let private testRunFromError error =
-    { Message = Some error
-      Status = Error
-      Tests = [] }
+let private testRunFromTestRunnerError errors =
+    { Message = errors |> String.concat "\n" |> Some
+      Status = TestStatus.Error
+      Tests = Array.empty }
 
-let private errorToMessage (error: FSharpErrorInfo) =
-    let fileName = System.IO.Path.GetFileName(error.FileName)
-    let lineNumber = error.StartLineAlternate
-    let message = String.normalize error.Message
+let private testResultsFromDotnetTest context =
+    match DotnetCli.runTests context with
+    | DotnetCli.TestRunSuccess testResults -> testRunFromTestRunnerSuccess testResults
+    | DotnetCli.TestRunError errors -> testRunFromTestRunnerError errors
 
-    sprintf "%s:%i: %s" fileName lineNumber message
+let runTests context =
+    match rewriteTests context with
+    | RewriteSuccess (originalTestCode, rewrittenTestCode) ->
+        try
+            File.WriteAllText(context.TestsFile, rewrittenTestCode)
 
-let private testRunFromCompilationError compilationError =
-    match compilationError with
-    | CompilationError errors ->
-        testRunFromError
-            (errors
-             |> Array.map errorToMessage
-             |> String.concat "\n"
-             |> String.normalize)
-    | CompilationFailed -> testRunFromError "Could not compile project"
-    | ProjectNotFound -> testRunFromError "Could not find project file"
-    | TestsFileNotFound -> testRunFromError "Could not find test file"
-
-let private testRunFromCompiledAssembly (assembly: Assembly) =
-    assembly
-    |> runTests
-    |> testRunFromTests
-
-let testRunFromCompilationResult result =
-    match result with
-    | Result.Ok assembly -> testRunFromCompiledAssembly assembly
-    | Result.Error error -> testRunFromCompilationError error
+            match DotnetCli.runTests context with
+            | DotnetCli.TestRunSuccess testResults -> testRunFromTestRunnerSuccess testResults
+            | DotnetCli.TestRunError errors -> testRunFromTestRunnerError errors
+        finally
+            File.WriteAllText(context.TestsFile, originalTestCode)
+    | RewriteError -> testRunFromTestRunnerError [ "Could not modify test suite" ]

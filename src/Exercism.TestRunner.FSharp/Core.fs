@@ -14,10 +14,10 @@ type TestResult =
 type TestRun =
     { Message: string option
       Status: TestStatus
-      Tests: TestResult list }
+      Tests: TestResult [] }
 
 type TestRunContext =
-    { InputFile: string
-      TestsFile: string
-      ProjectFile: string
+    { TestsFile: string
+      TestResultsFile: string
+      BuildLogFile: string
       ResultsFile: string }

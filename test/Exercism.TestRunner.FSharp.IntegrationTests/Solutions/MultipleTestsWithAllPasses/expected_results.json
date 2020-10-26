@@ -1,0 +1,17 @@
+{
+  "status": "pass",
+  "tests": [
+    {
+      "name": "FakeTests.Add should add numbers",
+      "status": "pass"
+    },
+    {
+      "name": "FakeTests.Mul should multiply numbers",
+      "status": "pass"
+    },
+    {
+      "name": "FakeTests.Sub should subtract numbers",
+      "status": "pass"
+    }
+  ]
+}
