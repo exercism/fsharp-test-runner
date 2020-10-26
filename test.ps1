@@ -29,7 +29,7 @@ param (
 )
 
 function Run-Test-Runner ([string] $SolutionDir) {
-    $slug = (Get-ChildItem -Path $SolutionDir -Filter *.csproj).BaseName
+    $slug = (Get-ChildItem -Path $SolutionDir -Filter *.fsproj).BaseName
     ./run.ps1 $slug $SolutionDir $SolutionDir
 }
 
@@ -40,8 +40,8 @@ function Move-Generated-Test-Results-To-Expected ([string] $SolutionsDir) {
 }
 
 function Update-Expected {
-    $solutionsDir = Join-Path "test" (Join-Path "Exercism.TestRunner.FSharp.IntegrationTests" "Solutions")
-    
+    $solutionsDir = Join-Path "tests" (Join-Path "Exercism.TestRunner.FSharp.IntegrationTests" "Solutions")
+
     Get-ChildItem $solutionsDir -Directory | ForEach-Object { 
         Run-Test-Runner $_.FullName
         Move-Generated-Test-Results-To-Expected $_.FullName
