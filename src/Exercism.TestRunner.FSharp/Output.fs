@@ -51,4 +51,5 @@ let private toJsonTestRun (testRun: TestRun) =
 let private serializeTestResults (testRun: TestRun) =
     JsonSerializer.Serialize(toJsonTestRun testRun, jsonSerializerOptions)
 
-let writeTestResults context testRun = File.WriteAllText(context.ResultsFile, serializeTestResults testRun)
+let writeTestResults context testRun =
+    File.WriteAllText(context.ResultsFile, serializeTestResults testRun)

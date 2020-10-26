@@ -65,12 +65,12 @@ module TestResults =
     let truncate (str: string) =
         let maxLength = 500
 
-        if str.Length > maxLength then
-            sprintf "%s\nOutput was truncated. Please limit to %d chars." str.[0..maxLength] maxLength
-        else
-            str
+        if str.Length > maxLength
+        then sprintf "%s\nOutput was truncated. Please limit to %d chars." str.[0..maxLength] maxLength
+        else str
 
-    let private toName (xmlUnitTestResult: XmlUnitTestResult) = xmlUnitTestResult.TestName.Replace("+Tests", "")
+    let private toName (xmlUnitTestResult: XmlUnitTestResult) =
+        xmlUnitTestResult.TestName.Replace("+Tests", "")
 
     let private toStatus (xmlUnitTestResult: XmlUnitTestResult) =
         match xmlUnitTestResult.Outcome with
@@ -111,7 +111,10 @@ module TestResults =
 
     let parse context =
         use fileStream = File.OpenRead(context.TestResultsFile)
-        let result = XmlSerializer(typeof<XmlTestRun>).Deserialize(fileStream) :?> XmlTestRun
+
+        let result =
+            XmlSerializer(typeof<XmlTestRun>)
+                .Deserialize(fileStream) :?> XmlTestRun
 
         result.Results
         |> Option.ofObj
@@ -126,12 +129,14 @@ module DotnetCli =
 
     let private removePaths (error: string) =
         let testsFsIndex = error.IndexOf("Tests.fs")
+
         if testsFsIndex = -1 then
             error
         else
-            let lastPathIndex = error.LastIndexOf(Path.DirectorySeparatorChar, testsFsIndex)
-            if lastPathIndex = -1 then error
-            else error.[lastPathIndex + 1..]
+            let lastPathIndex =
+                error.LastIndexOf(Path.DirectorySeparatorChar, testsFsIndex)
+
+            if lastPathIndex = -1 then error else error.[lastPathIndex + 1..]
 
     let private removeProjectReference (error: string) = error.[0..(error.LastIndexOf('[') - 1)]
 
@@ -144,24 +149,23 @@ module DotnetCli =
     let private parseBuildErrors context =
         File.ReadLines(context.BuildLogFile)
         |> Seq.map normalizeBuildError
-        |> Seq.filter (fun logLine ->
-            logLine
-            |> String.isNullOrWhiteSpace
-            |> not)
+        |> Seq.filter (fun logLine -> logLine |> String.isNullOrWhiteSpace |> not)
         |> Seq.toArray
 
     let private parseTestResults context = TestResults.parse context
 
     let runTests context =
         let command = "dotnet"
+
         let arguments =
-            sprintf "test --verbosity=quiet --logger \"trx;LogFileName=%s\" /flp:v=q"
+            sprintf
+                "test --verbosity=quiet --logger \"trx;LogFileName=%s\" /flp:v=q"
                 (Path.GetFileName(context.TestResultsFile))
+
         Process.exec command arguments (Path.GetDirectoryName(context.TestsFile))
 
         let buildErrors = parseBuildErrors context
-        if Array.isEmpty buildErrors then TestRunSuccess(parseTestResults context)
-        else TestRunError buildErrors
+        if Array.isEmpty buildErrors then TestRunSuccess(parseTestResults context) else TestRunError buildErrors
 
 let toTestStatus (testResults: TestResult []) =
     let testStatuses =
@@ -169,8 +173,10 @@ let toTestStatus (testResults: TestResult []) =
         |> Seq.map (fun testResult -> testResult.Status)
         |> Set.ofSeq
 
-    if testStatuses = Set.singleton TestStatus.Pass then TestStatus.Pass
-    elif Set.contains TestStatus.Fail testStatuses then TestStatus.Fail
+    if testStatuses = Set.singleton TestStatus.Pass
+    then TestStatus.Pass
+    elif Set.contains TestStatus.Fail testStatuses
+    then TestStatus.Fail
     else TestStatus.Error
 
 let private testRunFromTestRunnerSuccess testResults =
@@ -179,10 +185,7 @@ let private testRunFromTestRunnerSuccess testResults =
       Tests = testResults }
 
 let private testRunFromTestRunnerError errors =
-    { Message =
-          errors
-          |> String.concat "\n"
-          |> Some
+    { Message = errors |> String.concat "\n" |> Some
       Status = TestStatus.Error
       Tests = Array.empty }
 
@@ -193,7 +196,7 @@ let private testResultsFromDotnetTest context =
 
 let runTests context =
     match rewriteTests context with
-    | RewriteSuccess(originalTestCode, rewrittenTestCode) ->
+    | RewriteSuccess (originalTestCode, rewrittenTestCode) ->
         try
             File.WriteAllText(context.TestsFile, rewrittenTestCode)
 

@@ -6,7 +6,7 @@ let add x y =
 
     x + y
 
-let sub x y = 
+let sub x y =
     System.Console.WriteLine("Output")
     System.Diagnostics.Trace.WriteLine("from")
     System.Diagnostics.Debug.WriteLine("multiple")
