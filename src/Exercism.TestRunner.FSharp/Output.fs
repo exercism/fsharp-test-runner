@@ -24,6 +24,7 @@ type JsonTestRun =
       Tests: JsonTestResult [] }
 
 let private jsonSerializerOptions = JsonSerializerOptions()
+
 jsonSerializerOptions.IgnoreNullValues <- true
 
 let private toJsonTestStatus (testStatus: TestStatus) =
@@ -49,5 +50,4 @@ let private toJsonTestRun (testRun: TestRun) =
 let private serializeTestResults (testRun: TestRun) =
     JsonSerializer.Serialize(toJsonTestRun testRun, jsonSerializerOptions)
 
-let writeTestResults context testRun =
-    File.WriteAllText(context.ResultsFile, serializeTestResults testRun)
+let writeTestResults context testRun = File.WriteAllText(context.ResultsFile, serializeTestResults testRun)

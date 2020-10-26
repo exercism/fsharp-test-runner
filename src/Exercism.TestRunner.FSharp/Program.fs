@@ -24,18 +24,18 @@ let private createTestRunContext options =
     let exercise = options.Slug.Dehumanize().Pascalize()
     let (</>) left right = Path.Combine(left, right)
 
-    { TestsFile       = options.InputDirectory  </> sprintf "%sTests.fs" exercise
-      TestResultsFile = options.InputDirectory  </> "TestResults" </> "tests.trx"
-      BuildLogFile    = options.InputDirectory  </> "msbuild.log"
-      ResultsFile     = options.OutputDirectory </> "results.json" }
+    { TestsFile = options.InputDirectory </> sprintf "%sTests.fs" exercise
+      TestResultsFile = options.InputDirectory </> "TestResults" </> "tests.trx"
+      BuildLogFile = options.InputDirectory </> "msbuild.log"
+      ResultsFile = options.OutputDirectory </> "results.json" }
 
 let private runTestRunner options =
     printfn "Running test runner for '%s' solution..." options.Slug
-    
+
     let context = createTestRunContext options
     let testRun = runTests context
     writeTestResults context testRun
-    
+
     printfn "Ran test runner for '%s' solution" options.Slug
 
 [<EntryPoint>]
@@ -44,5 +44,4 @@ let main argv =
     | Some options ->
         runTestRunner options
         0
-    | None ->
-        1
+    | None -> 1
