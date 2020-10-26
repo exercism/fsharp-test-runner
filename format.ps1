@@ -12,4 +12,4 @@ dotnet tool restore
 
 # TODO: make this simpler once the fantomasignore file works well with subdirectories
 dotnet fantomas --recurse ./src/Exercism.TestRunner.FSharp
-dotnet fantomas ./tests/Exercism.TestRunner.FSharp.IntegrationTests/Tests.fs
+dotnet fantomas ./test/Exercism.TestRunner.FSharp.IntegrationTests/Tests.fs

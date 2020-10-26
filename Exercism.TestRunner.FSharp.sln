@@ -2,7 +2,7 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Exercism.TestRunner.FSharp", "src\Exercism.TestRunner.FSharp\Exercism.TestRunner.FSharp.fsproj", "{716757E0-24F9-4228-8B0E-48010F51A370}"
 EndProject
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Exercism.TestRunner.FSharp.IntegrationTests", "tests\Exercism.TestRunner.FSharp.IntegrationTests\Exercism.TestRunner.FSharp.IntegrationTests.fsproj", "{8043DC49-CD97-460F-91FC-BF025B5EB1FB}"
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Exercism.TestRunner.FSharp.IntegrationTests", "test\Exercism.TestRunner.FSharp.IntegrationTests\Exercism.TestRunner.FSharp.IntegrationTests.fsproj", "{8043DC49-CD97-460F-91FC-BF025B5EB1FB}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
