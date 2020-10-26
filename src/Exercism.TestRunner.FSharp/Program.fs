@@ -30,9 +30,13 @@ let private createTestRunContext options =
       ResultsFile     = options.OutputDirectory </> "results.json" }
 
 let private runTestRunner options =
+    printfn "Running test runner for '%s' solution..." options.Slug
+    
     let context = createTestRunContext options
     let testRun = runTests context
     writeTestResults context testRun
+    
+    printfn "Ran test runner for '%s' solution" options.Slug
 
 [<EntryPoint>]
 let main argv =
