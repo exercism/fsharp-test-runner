@@ -2,9 +2,9 @@
   "status": "fail",
   "tests": [
     {
-      "name": "FakeTest+Tests.Add should add numbers",
+      "name": "FakeTests.Add should add numbers",
       "status": "fail",
-      "message": "Please implement the add function"
+      "message": "System.Exception : Please implement the add function"
     }
   ]
 }

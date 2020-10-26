@@ -2,15 +2,15 @@
   "status": "pass",
   "tests": [
     {
-      "name": "FakeTest+Tests.Add should add numbers",
+      "name": "FakeTests.Add should add numbers",
       "status": "pass"
     },
     {
-      "name": "FakeTest+Tests.Sub should subtract numbers",
+      "name": "FakeTests.Mul should multiply numbers",
       "status": "pass"
     },
     {
-      "name": "FakeTest+Tests.Mul should multiply numbers",
+      "name": "FakeTests.Sub should subtract numbers",
       "status": "pass"
     }
   ]

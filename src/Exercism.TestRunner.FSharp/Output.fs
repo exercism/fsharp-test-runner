@@ -26,6 +26,7 @@ type JsonTestRun =
 let private jsonSerializerOptions = JsonSerializerOptions()
 
 jsonSerializerOptions.IgnoreNullValues <- true
+jsonSerializerOptions.WriteIndented <- true
 
 let private toJsonTestStatus (testStatus: TestStatus) =
     match testStatus with

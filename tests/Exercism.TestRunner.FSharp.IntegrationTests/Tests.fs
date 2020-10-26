@@ -80,7 +80,6 @@ let private assertSolutionHasExpectedResultsWithSlug (directory: string) (slug: 
 let private assertSolutionHasExpectedResults (directory: string) =
     assertSolutionHasExpectedResultsWithSlug directory "Fake"
 
-
 [<Fact>]
 let ``Single compile error``() = assertSolutionHasExpectedResults "SingleCompileError"
 

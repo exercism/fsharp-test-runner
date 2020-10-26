@@ -31,7 +31,6 @@ module TestResults =
     [<AllowNullLiteral>]
     [<XmlRoot(ElementName = "Output", Namespace = "http://microsoft.com/schemas/VisualStudio/TeamTest/2010")>]
     type XmlOutput() =
-
         [<XmlElement(ElementName = "StdOut", Namespace = "http://microsoft.com/schemas/VisualStudio/TeamTest/2010")>]
         member val StdOut: string = null with get, set
 
@@ -42,14 +41,11 @@ module TestResults =
     [<AllowNullLiteral>]
     [<XmlRoot(ElementName = "UnitTestResult", Namespace = "http://microsoft.com/schemas/VisualStudio/TeamTest/2010")>]
     type XmlUnitTestResult() =
-
         [<XmlElement(ElementName = "Output", Namespace = "http://microsoft.com/schemas/VisualStudio/TeamTest/2010")>]
         member val Output: XmlOutput = null with get, set
 
-
         [<XmlAttribute(AttributeName = "testName")>]
         member val TestName: string = null with get, set
-
 
         [<XmlAttribute(AttributeName = "outcome")>]
         member val Outcome: string = null with get, set
@@ -128,11 +124,21 @@ module DotnetCli =
         | TestRunSuccess of TestResult []
         | TestRunError of string []
 
+    let private removePaths (error: string) =
+        let testsFsIndex = error.IndexOf("Tests.fs")
+        if testsFsIndex = -1 then
+            error
+        else
+            let lastPathIndex = error.LastIndexOf(Path.DirectorySeparatorChar, testsFsIndex)
+            if lastPathIndex = -1 then error
+            else error.[lastPathIndex + 1..]
+
     let private removeProjectReference (error: string) = error.[0..(error.LastIndexOf('[') - 1)]
 
     let private normalizeBuildError error =
         error
         |> removeProjectReference
+        |> removePaths
         |> String.normalize
 
     let private parseBuildErrors context =
