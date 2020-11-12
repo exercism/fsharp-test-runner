@@ -134,11 +134,3 @@ let ``Multiple tests with test ouput`` () =
 [<Fact>]
 let ``Multiple tests with test ouput exceeding limit`` () =
     assertSolutionHasExpectedResults "MultipleTestsWithTestOutputExceedingLimit"
-
-[<Fact>]
-let ``NetCoreApp3_0 solution`` () =
-    assertSolutionHasExpectedResults "NetCoreApp3.0"
-
-[<Fact>]
-let ``NetCoreApp3_1 solution`` () =
-    assertSolutionHasExpectedResults "NetCoreApp3.1"
