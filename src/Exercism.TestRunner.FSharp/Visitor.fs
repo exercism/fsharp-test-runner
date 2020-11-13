@@ -1,6 +1,6 @@
 module Exercism.TestRunner.FSharp.Visitor
 
-open FSharp.Compiler.Ast
+open FSharp.Compiler.SyntaxTree
 
 type SyntaxVisitor() =
     abstract VisitInput: ParsedInput -> ParsedInput
