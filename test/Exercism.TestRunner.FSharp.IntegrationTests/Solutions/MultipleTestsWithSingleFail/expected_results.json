@@ -8,7 +8,7 @@
     {
       "name": "FakeTests.Mul should multiply numbers",
       "status": "fail",
-      "message": "Expected: Equals 5\nActual:   was 6"
+      "message": "Expected: Equals 5\nActual:   6"
     },
     {
       "name": "FakeTests.Sub should subtract numbers",

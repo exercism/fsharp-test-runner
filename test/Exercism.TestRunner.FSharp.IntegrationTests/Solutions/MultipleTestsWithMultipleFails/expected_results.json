@@ -4,12 +4,12 @@
     {
       "name": "FakeTests.Add should add numbers",
       "status": "fail",
-      "message": "Expected: Equals 3\nActual:   was 2"
+      "message": "Expected: Equals 3\nActual:   2"
     },
     {
       "name": "FakeTests.Mul should multiply numbers",
       "status": "fail",
-      "message": "Expected: Equals 7\nActual:   was 6"
+      "message": "Expected: Equals 7\nActual:   6"
     },
     {
       "name": "FakeTests.Sub should subtract numbers",
