@@ -24,7 +24,6 @@ type JsonTestRun =
       Tests: JsonTestResult [] }
 
 let private jsonSerializerOptions = JsonSerializerOptions()
-
 jsonSerializerOptions.IgnoreNullValues <- true
 jsonSerializerOptions.WriteIndented <- true
 

@@ -34,9 +34,6 @@ type JsonTestRun =
       Tests: JsonTestResult [] }
 
 let private jsonSerializerOptions = JsonSerializerOptions()
-
-jsonSerializerOptions.Converters.Add(JsonFSharpConverter())
-jsonSerializerOptions.Encoder <- JavaScriptEncoder.UnsafeRelaxedJsonEscaping
 jsonSerializerOptions.IgnoreNullValues <- true
 
 let normalizeTestRunResultJson (json: string) =
