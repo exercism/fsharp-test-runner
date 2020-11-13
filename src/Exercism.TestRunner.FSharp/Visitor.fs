@@ -259,6 +259,14 @@ type SyntaxVisitor() =
         | SynExpr.DiscardAfterMissingQualificationAfterDot (expr, range) ->
             SynExpr.DiscardAfterMissingQualificationAfterDot(this.VisitSynExpr expr, range)
         | SynExpr.Fixed (expr, range) -> SynExpr.Fixed(this.VisitSynExpr expr, range)
+        | SynExpr.InterpolatedString (contents, range) -> SynExpr.InterpolatedString(contents |> List.map this.VisitSynInterpolatedStringPart, range)
+        
+    abstract VisitSynInterpolatedStringPart: (SynInterpolatedStringPart) -> SynInterpolatedStringPart
+
+    default this.VisitSynInterpolatedStringPart(strPart: SynInterpolatedStringPart) =
+        match strPart with
+        | SynInterpolatedStringPart.String(str, range) -> SynInterpolatedStringPart.String(str, range)
+        | SynInterpolatedStringPart.FillExpr(expr, ident) -> SynInterpolatedStringPart.FillExpr(this.VisitSynExpr expr, Option.map this.VisitIdent ident)
 
     abstract VisitRecordField: (RecordFieldName * SynExpr option * BlockSeparator option)
      -> RecordFieldName * SynExpr option * BlockSeparator option
@@ -710,6 +718,7 @@ type SyntaxVisitor() =
 
     default this.VisitSynType(st: SynType): SynType =
         match st with
+        | SynType.Paren (innerType, range) -> SynType.Paren (this.VisitSynType innerType, range)
         | SynType.LongIdent (li) -> SynType.LongIdent(li)
         | SynType.App (typeName, lessRange, typeArgs, commaRanges, greaterRange, isPostfix, range) ->
             SynType.App
