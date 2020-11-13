@@ -126,9 +126,14 @@ type SyntaxVisitor() =
         | SynExpr.CompExpr (isArrayOrList, isNotNakedRefCell, expr, range) ->
             SynExpr.CompExpr(isArrayOrList, isNotNakedRefCell, this.VisitSynExpr expr, range)
         | SynExpr.Lambda (fromMethod, inLambdaSeq, args, body, parsedData, range) ->
-            SynExpr.Lambda(fromMethod, inLambdaSeq, this.VisitSynSimplePats args, this.VisitSynExpr body,
-                           parsedData |> Option.map (fun (patList, expr) -> (List.map this.VisitSynPat patList, this.VisitSynExpr expr)),
-                           range)
+            SynExpr.Lambda
+                (fromMethod,
+                 inLambdaSeq,
+                 this.VisitSynSimplePats args,
+                 this.VisitSynExpr body,
+                 parsedData
+                 |> Option.map (fun (patList, expr) -> (List.map this.VisitSynPat patList, this.VisitSynExpr expr)),
+                 range)
         | SynExpr.MatchLambda (isExnMatch, r, matchClauses, seqPoint, range) ->
             SynExpr.MatchLambda(isExnMatch, r, matchClauses |> List.map this.VisitSynMatchClause, seqPoint, range)
         | SynExpr.Match (seqPoint, expr, clauses, range) ->
@@ -234,7 +239,9 @@ type SyntaxVisitor() =
                  isFromSource,
                  this.VisitSynPat pat,
                  this.VisitSynExpr rhsExpr,
-                 andBangs |> List.map (fun (abSeqPoint, abIsUse, abIsFromSource, abPat, abRhs, abRange) -> (abSeqPoint, abIsUse, abIsFromSource, this.VisitSynPat abPat, this.VisitSynExpr abRhs, abRange)),
+                 andBangs
+                 |> List.map (fun (abSeqPoint, abIsUse, abIsFromSource, abPat, abRhs, abRange) ->
+                     (abSeqPoint, abIsUse, abIsFromSource, this.VisitSynPat abPat, this.VisitSynExpr abRhs, abRange)),
                  this.VisitSynExpr bodyExpr,
                  range)
         | SynExpr.MatchBang (seqPoint, expr, clauses, range) ->
@@ -259,14 +266,19 @@ type SyntaxVisitor() =
         | SynExpr.DiscardAfterMissingQualificationAfterDot (expr, range) ->
             SynExpr.DiscardAfterMissingQualificationAfterDot(this.VisitSynExpr expr, range)
         | SynExpr.Fixed (expr, range) -> SynExpr.Fixed(this.VisitSynExpr expr, range)
-        | SynExpr.InterpolatedString (contents, range) -> SynExpr.InterpolatedString(contents |> List.map this.VisitSynInterpolatedStringPart, range)
-        
+        | SynExpr.InterpolatedString (contents, range) ->
+            SynExpr.InterpolatedString
+                (contents
+                 |> List.map this.VisitSynInterpolatedStringPart,
+                 range)
+
     abstract VisitSynInterpolatedStringPart: (SynInterpolatedStringPart) -> SynInterpolatedStringPart
 
     default this.VisitSynInterpolatedStringPart(strPart: SynInterpolatedStringPart) =
         match strPart with
-        | SynInterpolatedStringPart.String(str, range) -> SynInterpolatedStringPart.String(str, range)
-        | SynInterpolatedStringPart.FillExpr(expr, ident) -> SynInterpolatedStringPart.FillExpr(this.VisitSynExpr expr, Option.map this.VisitIdent ident)
+        | SynInterpolatedStringPart.String (str, range) -> SynInterpolatedStringPart.String(str, range)
+        | SynInterpolatedStringPart.FillExpr (expr, ident) ->
+            SynInterpolatedStringPart.FillExpr(this.VisitSynExpr expr, Option.map this.VisitIdent ident)
 
     abstract VisitRecordField: (RecordFieldName * SynExpr option * BlockSeparator option)
      -> RecordFieldName * SynExpr option * BlockSeparator option
@@ -299,7 +311,8 @@ type SyntaxVisitor() =
     default this.VisitSynIndexerArg(ia: SynIndexerArg): SynIndexerArg =
         match ia with
         | SynIndexerArg.One (e, fromEnd, range) -> SynIndexerArg.One(this.VisitSynExpr e, fromEnd, range)
-        | SynIndexerArg.Two (e1, fromEnd1, e2, fromEnd2, range1, range2) -> SynIndexerArg.Two(this.VisitSynExpr e1, fromEnd1, this.VisitSynExpr e2, fromEnd2, range1, range2)
+        | SynIndexerArg.Two (e1, fromEnd1, e2, fromEnd2, range1, range2) ->
+            SynIndexerArg.Two(this.VisitSynExpr e1, fromEnd1, this.VisitSynExpr e2, fromEnd2, range1, range2)
 
     abstract VisitSynMatchClause: SynMatchClause -> SynMatchClause
 
@@ -718,7 +731,7 @@ type SyntaxVisitor() =
 
     default this.VisitSynType(st: SynType): SynType =
         match st with
-        | SynType.Paren (innerType, range) -> SynType.Paren (this.VisitSynType innerType, range)
+        | SynType.Paren (innerType, range) -> SynType.Paren(this.VisitSynType innerType, range)
         | SynType.LongIdent (li) -> SynType.LongIdent(li)
         | SynType.App (typeName, lessRange, typeArgs, commaRanges, greaterRange, isPostfix, range) ->
             SynType.App
@@ -859,8 +872,9 @@ type SyntaxVisitor() =
 
     default this.VisitSynOpenDeclTarget(sodt: SynOpenDeclTarget): SynOpenDeclTarget =
         match sodt with
-        | SynOpenDeclTarget.ModuleOrNamespace(longId, range) -> SynOpenDeclTarget.ModuleOrNamespace(this.VisitLongIdent(longId), range)
-        | SynOpenDeclTarget.Type(typeName, range) -> SynOpenDeclTarget.Type(this.VisitSynType(typeName), range)
+        | SynOpenDeclTarget.ModuleOrNamespace (longId, range) ->
+            SynOpenDeclTarget.ModuleOrNamespace(this.VisitLongIdent(longId), range)
+        | SynOpenDeclTarget.Type (typeName, range) -> SynOpenDeclTarget.Type(this.VisitSynType(typeName), range)
 
     abstract VisitLongIdentWithDots: LongIdentWithDots -> LongIdentWithDots
 
@@ -872,4 +886,4 @@ type SyntaxVisitor() =
     default this.VisitLongIdent(li: LongIdent): LongIdent = List.map this.VisitIdent li
 
     abstract VisitIdent: Ident -> Ident
-    default this.VisitIdent(ident: Ident): Ident = ident        
+    default this.VisitIdent(ident: Ident): Ident = ident

@@ -48,7 +48,7 @@ type CaptureConsoleOutput() =
                         Some(SynMemberDefn.LetBindings(bindings, false, isRecursive, range))
                     | _ -> None)
 
-            let ident name = Ident (name, range)
+            let ident name = Ident(name, range)
 
             let longIdentWithDots names =
                 LongIdentWithDots.LongIdentWithDots(names |> List.map (fun name -> ident name), [])
