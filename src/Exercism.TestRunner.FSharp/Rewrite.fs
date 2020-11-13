@@ -2,10 +2,12 @@ module Exercism.TestRunner.FSharp.Rewrite
 
 open Exercism.TestRunner.FSharp.Core
 open Exercism.TestRunner.FSharp.Visitor
-open FSharp.Compiler.Ast
 open System.IO
+open FSharp.Compiler.Range
 open FSharp.Compiler.SourceCodeServices
+open FSharp.Compiler.SyntaxTree
 open FSharp.Compiler.Text
+open FSharp.Compiler.XmlDoc
 open Fantomas
 
 type ParseResult =
@@ -46,7 +48,7 @@ type CaptureConsoleOutput() =
                         Some(SynMemberDefn.LetBindings(bindings, false, isRecursive, range))
                     | _ -> None)
 
-            let ident name = ident (name, range)
+            let ident name = Ident (name, range)
 
             let longIdentWithDots names =
                 LongIdentWithDots.LongIdentWithDots(names |> List.map (fun name -> ident name), [])
@@ -65,6 +67,7 @@ type CaptureConsoleOutput() =
                               range) ],
                           range),
                      None,
+                     PreXmlDoc.Empty,
                      range)
 
             let stringWriter =
@@ -88,7 +91,7 @@ type CaptureConsoleOutput() =
                               SynExpr.Const(SynConst.Unit, range),
                               range),
                          range,
-                         NoSequencePointAtLetBinding) ],
+                         NoDebugPointAtLetBinding) ],
                      false,
                      false,
                      range)
@@ -106,7 +109,7 @@ type CaptureConsoleOutput() =
                          SynPat.Const(SynConst.Unit, range),
                          None,
                          SynExpr.Sequential
-                             (SequencePointsAtSeq,
+                             (DebugPointAtSequential.Both,
                               true,
                               SynExpr.App
                                   (ExprAtomicFlag.Atomic,
@@ -121,7 +124,7 @@ type CaptureConsoleOutput() =
                                    SynExpr.Paren(SynExpr.Ident(ident "stringWriter"), range, None, range),
                                    range),
                               SynExpr.Sequential
-                                  (SequencePointsAtSeq,
+                                  (DebugPointAtSequential.Both,
                                    true,
                                    SynExpr.App
                                        (ExprAtomicFlag.Atomic,
@@ -173,7 +176,7 @@ type CaptureConsoleOutput() =
                                    range),
                               range),
                          range,
-                         NoSequencePointAtDoBinding) ],
+                         NoDebugPointAtDoBinding) ],
                      false,
                      false,
                      range)
@@ -237,7 +240,7 @@ type CaptureConsoleOutput() =
                                            ),
                                        range),
                                   range,
-                                  NoSequencePointAtInvisibleBinding),
+                                  NoDebugPointAtInvisibleBinding),
                               range) ]),
                      range)
 
