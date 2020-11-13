@@ -20,7 +20,7 @@
 
   <ItemGroup>
     <PackageReference Include="CommandLineParser" Version="2.8.0" />
-    <PackageReference Include="Fantomas" Version="4.2.0" />
+    <PackageReference Include="Fantomas" Version="4.3.0-alpha-004-alpha-049" />
     <PackageReference Include="FSharp.Compiler.Service" Version="38.0.0" />
     <PackageReference Include="Humanizer.Core" Version="2.8.26" />
     <PackageReference Include="FsUnit.xUnit" Version="4.0.2" />
