@@ -10,10 +10,10 @@ COPY src/Exercism.TestRunner.FSharp/ ./
 RUN dotnet publish -r linux-musl-x64 -c Release -o /opt/test-runner --no-restore -p:PublishReadyToRun=true
 
 # Pre-install packages for offline usage
-RUN dotnet add package Microsoft.NET.Test.Sdk -v 16.8.0 && \
+RUN dotnet add package Microsoft.NET.Test.Sdk -v 16.8.3 && \
     dotnet add package xunit -v 2.4.1 && \
     dotnet add package xunit.runner.visualstudio -v 2.4.3 && \
-    dotnet add package FsUnit.xUnit -v 4.0.2
+    dotnet add package FsUnit.xUnit -v 4.0.4
 
 # Build runtime image
 FROM mcr.microsoft.com/dotnet/sdk:5.0.100-alpine3.12-amd64 AS runtime
