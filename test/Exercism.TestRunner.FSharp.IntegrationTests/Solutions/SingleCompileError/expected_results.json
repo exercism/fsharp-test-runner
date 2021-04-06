@@ -1,4 +1,5 @@
 {
+  "version": 2,
   "status": "error",
   "message": "FakeTests.fs(10,45): error FS0039: The value or constructor \u0027add\u0027 is not defined.",
   "tests": []
