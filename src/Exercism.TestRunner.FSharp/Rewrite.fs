@@ -15,7 +15,7 @@ type ParseResult =
     | ParseError
 
 type RewriteResult =
-    | RewriteSuccess of OriginalCode: string * RewrittenCode: string
+    | RewriteSuccess of OriginalCode: string * OriginalTestTree: ParsedInput * RewrittenCode: string
     | RewriteError
 
 type EnableAllTests() =
@@ -312,5 +312,5 @@ let rewriteTests (context: TestRunContext) =
         let rewrittenTestCode =
             originalTestTree |> enableAllTests |> toCode
 
-        RewriteSuccess(originalTestCode, rewrittenTestCode)
+        RewriteSuccess(originalTestCode, originalTestTree, rewrittenTestCode)
     | ParseError -> RewriteError

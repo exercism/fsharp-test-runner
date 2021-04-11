@@ -13,7 +13,9 @@ type JsonTestResult =
       [<JsonPropertyName("message")>]
       Message: string
       [<JsonPropertyName("output")>]
-      Output: string }
+      Output: string
+      [<JsonPropertyName("test_code")>]
+      TestCode: string}
 
 type JsonTestRun =
     { [<JsonPropertyName("version")>]
@@ -39,6 +41,7 @@ let private toJsonTestResult (testResult: TestResult) =
     { Name = testResult.Name
       Message = testResult.Message |> Option.toObj
       Output = testResult.Output |> Option.toObj
+      TestCode = testResult.TestCode
       Status = toJsonTestStatus testResult.Status }
 
 let private toJsonTestRun (testRun: TestRun) =
