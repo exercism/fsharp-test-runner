@@ -131,3 +131,7 @@ let ``Multiple tests with test ouput`` () =
 [<Fact>]
 let ``Multiple tests with test ouput exceeding limit`` () =
     assertSolutionHasExpectedResults "MultipleTestsWithTestOutputExceedingLimit"
+
+[<Fact>]
+let ``Different test code formats`` () =
+    assertSolutionHasExpectedResults "DifferentTestCodeFormats"
