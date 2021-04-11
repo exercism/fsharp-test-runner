@@ -20,7 +20,7 @@ type RewriteResult =
 type EnableAllTests() =
     inherit SyntaxVisitor()
 
-    override __.VisitSynAttribute(attr: SynAttribute): SynAttribute =
+    override _.VisitSynAttribute(attr: SynAttribute): SynAttribute =
         match attr.TypeName with
         | LongIdentWithDots ([ ident ], _) when ident.idText = "Fact" ->
             base.VisitSynAttribute
