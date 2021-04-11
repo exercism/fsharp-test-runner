@@ -4,7 +4,8 @@
   "tests": [
     {
       "name": "FakeTests.Add should add numbers",
-      "status": "pass"
+      "status": "pass",
+      "test_code": "add 1 1 |\u003E should equal 2"
     }
   ]
 }

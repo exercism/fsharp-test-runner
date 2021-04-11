@@ -3,16 +3,14 @@
   "status": "pass",
   "tests": [
     {
-      "name": "FakeTests.Add should add numbers",
-      "status": "pass"
-    },
-    {
       "name": "FakeTests.Mul should multiply numbers",
-      "status": "pass"
+      "status": "pass",
+      "test_code": "mul 2 3 |\u003E should equal 6"
     },
     {
       "name": "FakeTests.Sub should subtract numbers",
-      "status": "pass"
+      "status": "pass",
+      "test_code": "sub 7 3 |\u003E should equal 4"
     }
   ]
 }

@@ -4,16 +4,19 @@
   "tests": [
     {
       "name": "FakeTests.Add should add numbers",
-      "status": "pass"
+      "status": "pass",
+      "test_code": "add 1 1 |\u003E should equal 2"
     },
     {
       "name": "FakeTests.Mul should multiply numbers",
       "status": "fail",
-      "message": "Expected: Equals 5\nActual:   6"
+      "message": "Expected: Equals 5\nActual:   6",
+      "test_code": "mul 2 3 |\u003E should equal 5"
     },
     {
       "name": "FakeTests.Sub should subtract numbers",
-      "status": "pass"
+      "status": "pass",
+      "test_code": "sub 2 1 |\u003E should equal 1"
     }
   ]
 }
