@@ -68,9 +68,10 @@ module TestResults =
     let truncate (str: string) =
         let maxLength = 500
 
-        if str.Length > maxLength
-        then $"%s{str.[0..maxLength]}\nOutput was truncated. Please limit to %d{maxLength} chars."
-        else str
+        if str.Length > maxLength then
+            $"%s{str.[0..maxLength]}\nOutput was truncated. Please limit to %d{maxLength} chars."
+        else
+            str
 
     let private toName (xmlUnitTestResult: XmlUnitTestResult) =
         xmlUnitTestResult.TestName.Replace("+Tests", "")
@@ -83,8 +84,10 @@ module TestResults =
 
     let private toMessage (xmlUnitTestResult: XmlUnitTestResult) =
         let removeFsUnitExceptionFromMessage (message: string) =
-            message.Replace
-                ("FsUnit.Xunit+MatchException : Exception of type 'FsUnit.Xunit+MatchException' was thrown.", "")
+            message.Replace(
+                "FsUnit.Xunit+MatchException : Exception of type 'FsUnit.Xunit+MatchException' was thrown.",
+                ""
+            )
 
         xmlUnitTestResult.Output
         |> Option.ofObj
@@ -99,26 +102,49 @@ module TestResults =
         |> Option.bind (fun output -> output.StdOut |> Option.ofObj)
         |> Option.map String.normalize
         |> Option.map truncate
-        
-    let private toTestCode (originalTestCode: ISourceText) (originalTestTree: ParsedInput) (xmlUnitTestResult: XmlUnitTestResult) =
-        let originalTestName = $"[{xmlUnitTestResult.TestName.[xmlUnitTestResult.TestName.IndexOf('.') + 1..]}]"
+
+    let private toTestCode
+        (originalTestCode: ISourceText)
+        (originalTestTree: ParsedInput)
+        (xmlUnitTestResult: XmlUnitTestResult)
+        =
+        let originalTestName =
+            $"[{xmlUnitTestResult.TestName.[xmlUnitTestResult.TestName.IndexOf('.') + 1..]}]"
+
         let mutable testCode = ""
+
         let visitor =
-           { new SyntaxVisitor() with
-               member this.VisitSynModuleDecl(moduleDecl) =
-                   match moduleDecl with
-                   | SynModuleDecl.Let(_, [Binding(_, _, _, _, _, _, _, SynPat.LongIdent(LongIdentWithDots(id, _), _, _, _, _, _), _, expr, _, _)], _) when (id.ToString()) = originalTestName ->
-                       testCode <-
-                           if expr.Range.StartLine = expr.Range.EndLine then
-                              originalTestCode.GetLineString(expr.Range.StartLine - 1).[expr.Range.StartColumn - 1 .. expr.Range.EndColumn - 1].Trim()
-                           else
-                              [expr.Range.StartLine .. expr.Range.EndLine]
-                              |> List.map (fun line -> originalTestCode.GetLineString(line - 1).[expr.Range.StartColumn..])
-                              |> String.concat "\n"
-                   | _ -> ()
-                       
-                   base.VisitSynModuleDecl(moduleDecl)
-           }
+            { new SyntaxVisitor() with
+                member this.VisitSynModuleDecl(moduleDecl) =
+                    match moduleDecl with
+                    | SynModuleDecl.Let (_,
+                                         [ Binding (_,
+                                                    _,
+                                                    _,
+                                                    _,
+                                                    _,
+                                                    _,
+                                                    _,
+                                                    SynPat.LongIdent (LongIdentWithDots (id, _), _, _, _, _, _),
+                                                    _,
+                                                    expr,
+                                                    _,
+                                                    _) ],
+                                         _) when (id.ToString()) = originalTestName ->
+                        testCode <-
+                            if expr.Range.StartLine = expr.Range.EndLine then
+                                originalTestCode.GetLineString(
+                                    expr.Range.StartLine - 1
+                                ).[expr.Range.StartColumn - 1..expr.Range.EndColumn - 1]
+                                    .Trim()
+                            else
+                                [ expr.Range.StartLine .. expr.Range.EndLine ]
+                                |> List.map
+                                    (fun line -> originalTestCode.GetLineString(line - 1).[expr.Range.StartColumn..])
+                                |> String.concat "\n"
+                    | _ -> ()
+
+                    base.VisitSynModuleDecl(moduleDecl) }
 
         visitor.VisitInput(originalTestTree) |> ignore
         testCode
@@ -128,7 +154,9 @@ module TestResults =
           Status = xmlUnitTestResult |> toStatus
           Message = xmlUnitTestResult |> toMessage
           Output = xmlUnitTestResult |> toOutput
-          TestCode = xmlUnitTestResult |> toTestCode originalTestCode originalTestTree }
+          TestCode =
+              xmlUnitTestResult
+              |> toTestCode originalTestCode originalTestTree }
 
     let private toTestResults originalTestCode originalTestTree xmlUnitTestResults =
         xmlUnitTestResults
@@ -141,7 +169,8 @@ module TestResults =
 
         let result =
             XmlSerializer(typeof<XmlTestRun>)
-                .Deserialize(fileStream) :?> XmlTestRun
+                .Deserialize(fileStream)
+            :?> XmlTestRun
 
         result.Results
         |> Option.ofObj
@@ -163,7 +192,10 @@ module DotnetCli =
             let lastPathIndex =
                 error.LastIndexOf(Path.DirectorySeparatorChar, testsFsIndex)
 
-            if lastPathIndex = -1 then error else error.[lastPathIndex + 1..]
+            if lastPathIndex = -1 then
+                error
+            else
+                error.[lastPathIndex + 1..]
 
     let private removeProjectReference (error: string) = error.[0..(error.LastIndexOf('[') - 1)]
 
@@ -179,7 +211,8 @@ module DotnetCli =
         |> Seq.filter (fun logLine -> logLine |> String.isNullOrWhiteSpace |> not)
         |> Seq.toArray
 
-    let private parseTestResults originalTestCode originalTestTree context = TestResults.parse originalTestCode originalTestTree context
+    let private parseTestResults originalTestCode originalTestTree context =
+        TestResults.parse originalTestCode originalTestTree context
 
     let runTests originalTestCode originalTestTree context =
         let command = "dotnet"
@@ -190,7 +223,11 @@ module DotnetCli =
         Process.exec command arguments (Path.GetDirectoryName(context.TestsFile))
 
         let buildErrors = parseBuildErrors context
-        if Array.isEmpty buildErrors then TestRunSuccess(parseTestResults originalTestCode originalTestTree context) else TestRunError buildErrors
+
+        if Array.isEmpty buildErrors then
+            TestRunSuccess(parseTestResults originalTestCode originalTestTree context)
+        else
+            TestRunError buildErrors
 
 let toTestStatus (testResults: TestResult []) =
     let testStatuses =
@@ -198,11 +235,12 @@ let toTestStatus (testResults: TestResult []) =
         |> Seq.map (fun testResult -> testResult.Status)
         |> Set.ofSeq
 
-    if testStatuses = Set.singleton TestStatus.Pass
-    then TestStatus.Pass
-    elif Set.contains TestStatus.Fail testStatuses
-    then TestStatus.Fail
-    else TestStatus.Error
+    if testStatuses = Set.singleton TestStatus.Pass then
+        TestStatus.Pass
+    elif Set.contains TestStatus.Fail testStatuses then
+        TestStatus.Fail
+    else
+        TestStatus.Error
 
 let private testRunFromTestRunnerSuccess testResults =
     { Message = None
