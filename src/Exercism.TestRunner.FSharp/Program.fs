@@ -18,7 +18,7 @@ type Options =
 
 let private parseOptions argv =
     match Parser.Default.ParseArguments<Options>(argv) with
-    | :? (Parsed<Options>) as options -> Some options.Value
+    | :? Parsed<Options> as options -> Some options.Value
     | _ -> None
 
 let private createTestRunContext options =
