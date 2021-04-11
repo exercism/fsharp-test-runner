@@ -15,7 +15,7 @@ type JsonTestResult =
       [<JsonPropertyName("output")>]
       Output: string
       [<JsonPropertyName("test_code")>]
-      TestCode: string}
+      TestCode: string }
 
 type JsonTestRun =
     { [<JsonPropertyName("version")>]
