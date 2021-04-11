@@ -3,19 +3,18 @@ module Exercism.TestRunner.FSharp.Rewrite
 open Exercism.TestRunner.FSharp.Core
 open Exercism.TestRunner.FSharp.Visitor
 open System.IO
-open FSharp.Compiler.Range
+open FSharp.Compiler.Text
 open FSharp.Compiler.SourceCodeServices
 open FSharp.Compiler.SyntaxTree
-open FSharp.Compiler.Text
 open FSharp.Compiler.XmlDoc
 open Fantomas
 
 type ParseResult =
-    | ParseSuccess of Code: string * Tree: ParsedInput
+    | ParseSuccess of Code: ISourceText * Tree: ParsedInput
     | ParseError
 
 type RewriteResult =
-    | RewriteSuccess of OriginalCode: string * OriginalTestTree: ParsedInput * RewrittenCode: string
+    | RewriteSuccess of OriginalCode: ISourceText * OriginalTestTree: ParsedInput * RewrittenCode: ISourceText
     | RewriteError
 
 type EnableAllTests() =
@@ -273,22 +272,20 @@ type CaptureConsoleOutput() =
 
 let private checker = FSharpChecker.Create()
 
-let private parseSourceText (sourceText: string) (filePath: string) =
-    let parseOptions =
-        { FSharpParsingOptions.Default with
-              SourceFiles = [| filePath |] }
-
+let private parseTree (sourceText: ISourceText) (filePath: string) =
+    let parseOptions = { FSharpParsingOptions.Default with SourceFiles = [| filePath |] }
+    
     let parseResult =
-        checker.ParseFile(filePath, sourceText |> SourceText.ofString, parseOptions)
+        checker.ParseFile(filePath, sourceText, parseOptions)
         |> Async.RunSynchronously
-
+    
     parseResult.ParseTree
 
 let private parseFile (filePath: string) =
     if File.Exists(filePath) then
-        let sourceText = File.ReadAllText(filePath)
+        let sourceText = File.ReadAllText(filePath) |> SourceText.ofString
 
-        parseSourceText sourceText filePath
+        parseTree sourceText filePath
         |> Option.map (fun tree -> ParseSuccess(sourceText, tree))
         |> Option.defaultValue ParseError
     else
@@ -297,6 +294,7 @@ let private parseFile (filePath: string) =
 let private toCode tree =
     CodeFormatter.FormatASTAsync(tree, "", [], None, FormatConfig.FormatConfig.Default)
     |> Async.RunSynchronously
+    |> SourceText.ofString
 
 let private enableAllTests parsedInput =
     let visitors: SyntaxVisitor list =
