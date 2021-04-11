@@ -27,7 +27,7 @@ let private createTestRunContext options =
 
     { TestsFile =
           options.InputDirectory
-          </> sprintf "%sTests.fs" exercise
+          </> $"%s{exercise}Tests.fs"
       TestResultsFile =
           options.InputDirectory
           </> "TestResults"
@@ -38,13 +38,13 @@ let private createTestRunContext options =
 let private runTestRunner options =
     let currentDate () = DateTimeOffset.UtcNow.ToString("u")
 
-    printfn "[%s] Running test runner for '%s' solution..." (currentDate ()) options.Slug
+    printfn $"[%s{currentDate ()}] Running test runner for '%s{options.Slug}' solution..."
 
     let context = createTestRunContext options
     let testRun = runTests context
     writeTestResults context testRun
 
-    printfn "[%s] Ran test runner for '%s' solution" (currentDate ()) options.Slug
+    printfn $"[%s{currentDate ()}] Ran test runner for '%s{options.Slug}' solution"
 
 [<EntryPoint>]
 let main argv =

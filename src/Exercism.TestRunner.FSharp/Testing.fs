@@ -67,7 +67,7 @@ module TestResults =
         let maxLength = 500
 
         if str.Length > maxLength
-        then sprintf "%s\nOutput was truncated. Please limit to %d chars." str.[0..maxLength] maxLength
+        then $"%s{str.[0..maxLength]}\nOutput was truncated. Please limit to %d{maxLength} chars."
         else str
 
     let private toName (xmlUnitTestResult: XmlUnitTestResult) =
@@ -163,9 +163,7 @@ module DotnetCli =
         let command = "dotnet"
 
         let arguments =
-            sprintf
-                "test --verbosity=quiet --logger \"trx;LogFileName=%s\" /flp:v=q"
-                (Path.GetFileName(context.TestResultsFile))
+            $"test --verbosity=quiet --logger \"trx;LogFileName=%s{Path.GetFileName(context.TestResultsFile)}\" /flp:v=q"
 
         Process.exec command arguments (Path.GetDirectoryName(context.TestsFile))
 
