@@ -24,8 +24,8 @@ type EnableAllTests() =
         match attr.TypeName with
         | LongIdentWithDots ([ ident ], _) when ident.idText = "Fact" ->
             base.VisitSynAttribute
-                ({ attr with
-                       ArgExpr = SynExpr.Const(SynConst.Unit, attr.ArgExpr.Range) })
+                { attr with
+                      ArgExpr = SynExpr.Const(SynConst.Unit, attr.ArgExpr.Range) }
         | _ -> base.VisitSynAttribute(attr)
 
 type CaptureConsoleOutput() =
@@ -34,7 +34,7 @@ type CaptureConsoleOutput() =
     override this.VisitSynModuleOrNamespace(modOrNs: SynModuleOrNamespace): SynModuleOrNamespace =
         match modOrNs with
         | SynModuleOrNamespace (longIdent, isRecursive, isModule, decls, doc, attrs, access, range) ->
-            let (letDecls, otherDecls) =
+            let letDecls, otherDecls =
                 decls
                 |> List.partition (function
                     | SynModuleDecl.Let (_, _, _) -> true
@@ -186,61 +186,61 @@ type CaptureConsoleOutput() =
                         (longIdentWithDots [ "System"
                                              "IDisposable" ]),
                      Some
-                         ([ SynMemberDefn.Member
-                             (Binding
-                                 (None,
-                                  NormalBinding,
-                                  false,
-                                  false,
-                                  [],
-                                  PreXmlDoc.Empty,
-                                  SynValData
-                                      (Some
-                                          ({ IsInstance = true
-                                             IsDispatchSlot = false
-                                             IsOverrideOrExplicitImpl = true
-                                             IsFinal = false
-                                             MemberKind = MemberKind.Member }),
-                                       SynValInfo([], SynArgInfo([], false, None)),
-                                       None),
-                                  SynPat.LongIdent
-                                      (longIdentWithDots [ "__"; "Dispose" ],
-                                       None,
-                                       None,
-                                       Pats([ SynPat.Paren(SynPat.Const(SynConst.Unit, range), range) ]),
-                                       None,
-                                       range),
-                                  None,
-                                  SynExpr.App
-                                      (ExprAtomicFlag.Atomic,
-                                       false,
-                                       SynExpr.LongIdent
-                                           (false,
-                                            longIdentWithDots [ "testOutput"
-                                                                "WriteLine" ],
-                                            None,
-                                            range),
-                                       SynExpr.Paren
-                                           (SynExpr.App
-                                               (ExprAtomicFlag.Atomic,
-                                                false,
-                                                SynExpr.LongIdent
-                                                    (false,
-                                                     longIdentWithDots [ "stringWriter"
-                                                                         "ToString" ],
-                                                     None,
-                                                     range),
-                                                SynExpr.Const(SynConst.Unit, range),
-                                                range),
-                                            range,
-                                            None,
-                                            range
+                         [ SynMemberDefn.Member
+                            (Binding
+                                (None,
+                                 NormalBinding,
+                                 false,
+                                 false,
+                                 [],
+                                 PreXmlDoc.Empty,
+                                 SynValData
+                                     (Some
+                                         { IsInstance = true
+                                           IsDispatchSlot = false
+                                           IsOverrideOrExplicitImpl = true
+                                           IsFinal = false
+                                           MemberKind = MemberKind.Member },
+                                      SynValInfo([], SynArgInfo([], false, None)),
+                                      None),
+                                 SynPat.LongIdent
+                                     (longIdentWithDots [ "__"; "Dispose" ],
+                                      None,
+                                      None,
+                                      Pats([ SynPat.Paren(SynPat.Const(SynConst.Unit, range), range) ]),
+                                      None,
+                                      range),
+                                 None,
+                                 SynExpr.App
+                                     (ExprAtomicFlag.Atomic,
+                                      false,
+                                      SynExpr.LongIdent
+                                          (false,
+                                           longIdentWithDots [ "testOutput"
+                                                               "WriteLine" ],
+                                           None,
+                                           range),
+                                      SynExpr.Paren
+                                          (SynExpr.App
+                                              (ExprAtomicFlag.Atomic,
+                                               false,
+                                               SynExpr.LongIdent
+                                                   (false,
+                                                    longIdentWithDots [ "stringWriter"
+                                                                        "ToString" ],
+                                                    None,
+                                                    range),
+                                               SynExpr.Const(SynConst.Unit, range),
+                                               range),
+                                           range,
+                                           None,
+                                           range
 
-                                           ),
-                                       range),
-                                  range,
-                                  NoDebugPointAtInvisibleBinding),
-                              range) ]),
+                                          ),
+                                      range),
+                                 range,
+                                 NoDebugPointAtInvisibleBinding),
+                             range) ],
                      range)
 
             let newDecls =
