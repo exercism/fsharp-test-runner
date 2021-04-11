@@ -5,7 +5,9 @@ open System.IO
 open System.Xml.Serialization
 open Exercism.TestRunner.FSharp.Core
 open Exercism.TestRunner.FSharp.Rewrite
+open Exercism.TestRunner.FSharp.Visitor
 open FSharp.Compiler.SyntaxTree
+open FSharp.Compiler.Text
 
 module String =
     let normalize (str: string) = str.Replace("\r\n", "\n").Trim()
@@ -98,23 +100,43 @@ module TestResults =
         |> Option.map String.normalize
         |> Option.map truncate
         
-    let private toTestCode (originalTestTree: ParsedInput) (xmlUnitTestResult: XmlUnitTestResult) =
-        ""
+    let private toTestCode (originalTestCode: ISourceText) (originalTestTree: ParsedInput) (xmlUnitTestResult: XmlUnitTestResult) =
+        let originalTestName = $"[{xmlUnitTestResult.TestName.[xmlUnitTestResult.TestName.IndexOf('.') + 1..]}]"
+        let mutable testCode = ""
+        let visitor =
+           { new SyntaxVisitor() with
+               member this.VisitSynModuleDecl(moduleDecl) =
+                   match moduleDecl with
+                   | SynModuleDecl.Let(_, [Binding(_, _, _, _, _, _, _, SynPat.LongIdent(LongIdentWithDots(id, _), _, _, _, _, _), _, expr, _, _)], _) when (id.ToString()) = originalTestName ->
+                       testCode <-
+                           if expr.Range.StartLine = expr.Range.EndLine then
+                              originalTestCode.GetLineString(expr.Range.StartLine - 1).[expr.Range.StartColumn - 1 .. expr.Range.EndColumn - 1].Trim()
+                           else
+                              [expr.Range.StartLine .. expr.Range.EndLine]
+                              |> List.map (fun line -> originalTestCode.GetLineString(line - 1).[expr.Range.StartColumn..])
+                              |> String.concat "\n"
+                   | _ -> ()
+                       
+                   base.VisitSynModuleDecl(moduleDecl)
+           }
 
-    let private toTestResult originalTestTree (xmlUnitTestResult: XmlUnitTestResult) =
+        visitor.VisitInput(originalTestTree) |> ignore
+        testCode
+
+    let private toTestResult originalTestCode originalTestTree (xmlUnitTestResult: XmlUnitTestResult) =
         { Name = xmlUnitTestResult |> toName
           Status = xmlUnitTestResult |> toStatus
           Message = xmlUnitTestResult |> toMessage
           Output = xmlUnitTestResult |> toOutput
-          TestCode = xmlUnitTestResult |> toTestCode originalTestTree }
+          TestCode = xmlUnitTestResult |> toTestCode originalTestCode originalTestTree }
 
-    let private toTestResults originalTestTree xmlUnitTestResults =
+    let private toTestResults originalTestCode originalTestTree xmlUnitTestResults =
         xmlUnitTestResults
-        |> Seq.map (toTestResult originalTestTree)
+        |> Seq.map (toTestResult originalTestCode originalTestTree)
         |> Seq.sortBy (fun testResult -> testResult.Name)
         |> Seq.toArray
 
-    let parse originalTestTree context =
+    let parse originalTestCode originalTestTree context =
         use fileStream = File.OpenRead(context.TestResultsFile)
 
         let result =
@@ -124,7 +146,7 @@ module TestResults =
         result.Results
         |> Option.ofObj
         |> Option.bind (fun results -> results.UnitTestResult |> Option.ofObj)
-        |> Option.map (toTestResults originalTestTree)
+        |> Option.map (toTestResults originalTestCode originalTestTree)
         |> Option.defaultValue Array.empty
 
 module DotnetCli =
@@ -157,9 +179,9 @@ module DotnetCli =
         |> Seq.filter (fun logLine -> logLine |> String.isNullOrWhiteSpace |> not)
         |> Seq.toArray
 
-    let private parseTestResults originalTestTree context = TestResults.parse originalTestTree context
+    let private parseTestResults originalTestCode originalTestTree context = TestResults.parse originalTestCode originalTestTree context
 
-    let runTests originalTestTree context =
+    let runTests originalTestCode originalTestTree context =
         let command = "dotnet"
 
         let arguments =
@@ -168,7 +190,7 @@ module DotnetCli =
         Process.exec command arguments (Path.GetDirectoryName(context.TestsFile))
 
         let buildErrors = parseBuildErrors context
-        if Array.isEmpty buildErrors then TestRunSuccess(parseTestResults originalTestTree context) else TestRunError buildErrors
+        if Array.isEmpty buildErrors then TestRunSuccess(parseTestResults originalTestCode originalTestTree context) else TestRunError buildErrors
 
 let toTestStatus (testResults: TestResult []) =
     let testStatuses =
@@ -198,7 +220,7 @@ let runTests context =
         try
             File.WriteAllText(context.TestsFile, rewrittenTestCode.ToString())
 
-            match DotnetCli.runTests originalTestTree context with
+            match DotnetCli.runTests originalTestCode originalTestTree context with
             | DotnetCli.TestRunSuccess testResults -> testRunFromTestRunnerSuccess testResults
             | DotnetCli.TestRunError errors -> testRunFromTestRunnerError errors
         finally
