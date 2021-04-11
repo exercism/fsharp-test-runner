@@ -5,8 +5,6 @@ open System.IO
 open System.Xml.Serialization
 open Exercism.TestRunner.FSharp.Core
 open Exercism.TestRunner.FSharp.Rewrite
-open FSharp.Compiler.Range
-open FSharp.Compiler.SourceCodeServices.AstTraversal
 open FSharp.Compiler.SyntaxTree
 
 module String =
@@ -101,27 +99,6 @@ module TestResults =
         |> Option.map truncate
         
     let private toTestCode (originalTestTree: ParsedInput) (xmlUnitTestResult: XmlUnitTestResult) =
-        
-        let visitor =
-            { new AstVisitorBase<_>() with
-                member this.VisitModuleDecl(defaultTraverse, moduleDecl) =
-                    match moduleDecl with
-                    | SynModuleDecl.Let (isRecursive, bindings, range) -> 
-                        defaultTraverse moduleDecl
-                    | _ -> None
-                member this.VisitExpr(_path, traverseSynExpr, defaultTraverse, expr) =
-                    match expr with
-                    | SynExpr.LetOrUse(isRecursive, isUse, bindings, body, range) ->
-                        printfn "%A" bindings
-                        printfn "%A" body
-                        defaultTraverse expr
-                    | _ -> defaultTraverse(expr)
-                     }
-//        originalTestTree.
-
-        Traverse(range.Zero.Start, originalTestTree, visitor)
-        |> printfn "%A"
-        
         ""
 
     let private toTestResult originalTestTree (xmlUnitTestResult: XmlUnitTestResult) =
@@ -221,11 +198,11 @@ let runTests context =
     match rewriteTests context with
     | RewriteSuccess (originalTestCode, originalTestTree, rewrittenTestCode) ->
         try
-            File.WriteAllText(context.TestsFile, rewrittenTestCode)
+            File.WriteAllText(context.TestsFile, rewrittenTestCode.ToString())
 
             match DotnetCli.runTests originalTestTree context with
             | DotnetCli.TestRunSuccess testResults -> testRunFromTestRunnerSuccess testResults
             | DotnetCli.TestRunError errors -> testRunFromTestRunnerError errors
         finally
-            File.WriteAllText(context.TestsFile, originalTestCode)
+            File.WriteAllText(context.TestsFile, originalTestCode.ToString())
     | RewriteError -> testRunFromTestRunnerError [ "Could not modify test suite" ]
