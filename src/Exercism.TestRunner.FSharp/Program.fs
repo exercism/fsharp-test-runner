@@ -1,8 +1,10 @@
 module Exercism.TestRunner.FSharp.Program
 
 open System
+open System.Collections.Generic
 open System.IO
 open CommandLine
+open FSharp.Compiler.SourceCodeServices
 open Humanizer
 open Exercism.TestRunner.FSharp.Core
 open Exercism.TestRunner.FSharp.Testing
@@ -44,10 +46,43 @@ let private runTestRunner options =
 
     printfn $"[%s{currentDate ()}] Ran test runner for '%s{options.Slug}' solution"
 
+let checker = FSharpChecker.Create()
+
+let projectOptions =
+    // TODO: read files from .meta/config.json
+    let dllName = "MultipleTestsWithSingleFail.dll"
+    let projectFileName = "Fake.fsproj" 
+    let fileName1 = "/Users/erik/Code/exercism/fsharp-test-runner/test/Exercism.TestRunner.FSharp.IntegrationTests/Solutions/MultipleTestsWithMultipleFails/Fake.fs"
+    let fileName2 = "/Users/erik/Code/exercism/fsharp-test-runner/test/Exercism.TestRunner.FSharp.IntegrationTests/Solutions/MultipleTestsWithMultipleFails/FakeTests.fs"
+    
+    let references =
+        AppContext.GetData("TRUSTED_PLATFORM_ASSEMBLIES").ToString().Split(Path.PathSeparator)
+    
+    checker.GetProjectOptionsFromCommandLineArgs
+       (projectFileName,
+        [| yield "--simpleresolution"
+           yield "--noframework"
+           yield "--debug-"
+           yield "--define:DEBUG"
+           yield "--optimize-"
+           yield "--out:" + dllName
+           yield "--fullpaths"
+           yield "--target:library"
+           yield fileName1
+           yield fileName2
+           for r in references do
+                 yield "-r:" + r |])
+
 [<EntryPoint>]
 let main argv =
-    match parseOptions argv with
-    | Some options ->
-        runTestRunner options
-        0
-    | None -> 1
+    let wholeProjectResults = checker.ParseAndCheckProject(projectOptions) |> Async.RunSynchronously
+
+    [ for error in wholeProjectResults.Errors -> printfn "%A" error ]
+    [ for x in wholeProjectResults.AssemblySignature.Entities -> printfn "%A" x.DisplayName ]
+        
+    0
+//    match parseOptions argv with
+//    | Some options ->
+//        runTestRunner options
+//        0
+//    | None -> 1
