@@ -48,38 +48,51 @@ let private runTestRunner options =
 
 let checker = FSharpChecker.Create()
 
+let projectArgs =
+    let dllName = "MultipleTestsWithSingleFail.dll"
+    let projectFileName = "Fake.fsproj" 
+    let fileName1 = "/Users/erik/Code/exercism/fsharp-test-runner/test/Exercism.TestRunner.FSharp.IntegrationTests/Solutions/MultipleTestsWithMultipleFails/Fake.fs"
+    let fileName2 = "/Users/erik/Code/exercism/fsharp-test-runner/test/Exercism.TestRunner.FSharp.IntegrationTests/Solutions/MultipleTestsWithMultipleFails/FakeTests.fs"
+    let dir = Directory.GetCurrentDirectory()
+    let references =
+        AppContext.GetData("TRUSTED_PLATFORM_ASSEMBLIES").ToString().Split(Path.PathSeparator)
+    
+    [| yield "--simpleresolution"
+       yield "--noframework"
+       yield "--debug-"
+       yield "--define:DEBUG"
+       yield "--optimize-"
+       yield "--out:" + dllName
+       yield "--fullpaths"
+       yield "--target:library"
+       yield fileName1
+       yield fileName2
+       for r in references do
+             yield "-r:" + r |]
+
 let projectOptions =
     // TODO: read files from .meta/config.json
     let dllName = "MultipleTestsWithSingleFail.dll"
     let projectFileName = "Fake.fsproj" 
     let fileName1 = "/Users/erik/Code/exercism/fsharp-test-runner/test/Exercism.TestRunner.FSharp.IntegrationTests/Solutions/MultipleTestsWithMultipleFails/Fake.fs"
     let fileName2 = "/Users/erik/Code/exercism/fsharp-test-runner/test/Exercism.TestRunner.FSharp.IntegrationTests/Solutions/MultipleTestsWithMultipleFails/FakeTests.fs"
-    
+    let dir = Directory.GetCurrentDirectory()
     let references =
         AppContext.GetData("TRUSTED_PLATFORM_ASSEMBLIES").ToString().Split(Path.PathSeparator)
     
-    checker.GetProjectOptionsFromCommandLineArgs
-       (projectFileName,
-        [| yield "--simpleresolution"
-           yield "--noframework"
-           yield "--debug-"
-           yield "--define:DEBUG"
-           yield "--optimize-"
-           yield "--out:" + dllName
-           yield "--fullpaths"
-           yield "--target:library"
-           yield fileName1
-           yield fileName2
-           for r in references do
-                 yield "-r:" + r |])
+    checker.GetProjectOptionsFromCommandLineArgs(projectFileName, projectArgs)
 
 [<EntryPoint>]
 let main argv =
-    let wholeProjectResults = checker.ParseAndCheckProject(projectOptions) |> Async.RunSynchronously
+    
+    let (errors, result) = checker.Compile(projectArgs) |> Async.RunSynchronously
+    [ for error in errors -> printfn "%A" error ]
+    
+//    let wholeProjectResults = checker.ParseAndCheckProject(projectOptions) |> Async.RunSynchronously
+//    [ for error in wholeProjectResults.Errors -> printfn "%A" error ]
+//    [ for x in wholeProjectResults.AssemblySignature.Entities -> printfn "%A" x.DisplayName ]
 
-    [ for error in wholeProjectResults.Errors -> printfn "%A" error ]
-    [ for x in wholeProjectResults.AssemblySignature.Entities -> printfn "%A" x.DisplayName ]
-        
+    
     0
 //    match parseOptions argv with
 //    | Some options ->
