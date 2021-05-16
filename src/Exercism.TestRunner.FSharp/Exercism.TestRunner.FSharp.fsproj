@@ -23,8 +23,8 @@
 <!--    <PackageReference Include="Exercism.Tests" Version="0.1.0-alpha2" />-->
 <!--    <PackageReference Include="Fantomas" Version="4.4.0" />-->
 <!--    <PackageReference Include="Humanizer.Core" Version="2.10.1" />-->
+    <PackageReference Include="FSharp.Compiler.Service" Version="39.0.0" />
     <PackageReference Include="FsUnit.xUnit" Version="4.0.4" />
-    <PackageReference Include="Ionide.ProjInfo.FCS" Version="0.52.0" />
     <PackageReference Include="xunit.runner.utility" Version="2.4.1" />
   </ItemGroup>
 

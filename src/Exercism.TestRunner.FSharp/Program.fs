@@ -2,137 +2,230 @@ module Exercism.TestRunner.FSharp.Program
 
 open System
 open System.Collections.Concurrent
-open System.Collections.Generic
+open System.Diagnostics
 open System.IO
 open System.Reflection
-open System.Runtime.Loader
 open System.Threading
-//open CommandLine
+
 open FSharp.Compiler.SourceCodeServices
 open Xunit.Runners
-//open Humanizer
-//open Exercism.TestRunner.FSharp.Core
-//open Exercism.TestRunner.FSharp.Testing
-//open Exercism.TestRunner.FSharp.Output
-//open Xunit.Runners
-
-//type Options =
-//    { [<Value(0, Required = true, HelpText = "The solution's exercise")>]
-//      Slug: string
-//      [<Value(1, Required = true, HelpText = "The directory containing the solution")>]
-//      InputDirectory: string
-//      [<Value(2, Required = true, HelpText = "The directory to which the results will be written")>]
-//      OutputDirectory: string }
-//
-//let private parseOptions argv =
-//    match Parser.Default.ParseArguments<Options>(argv) with
-//    | :? (Parsed<Options>) as options -> Some options.Value
-//    | _ -> None
-//
-//let private createTestRunContext options =
-//    let exercise = options.Slug.Dehumanize().Pascalize()
-//    let (</>) left right = Path.Combine(left, right)
-//
-//    { TestsFile = options.InputDirectory </> $"%s{exercise}Tests.fs"
-//      TestResultsFile =
-//          options.InputDirectory
-//          </> "TestResults"
-//          </> "tests.trx"
-//      BuildLogFile = options.InputDirectory </> "msbuild.log"
-//      ResultsFile = options.OutputDirectory </> "results.json" }
-//
-//let private runTestRunner options =
-//    let currentDate () = DateTimeOffset.UtcNow.ToString("u")
-//
-//    printfn $"[%s{currentDate ()}] Running test runner for '%s{options.Slug}' solution..."
-//
-//    let context = createTestRunContext options
-//    let testRun = runTests context
-//    writeTestResults context testRun
-//
-//    printfn $"[%s{currentDate ()}] Ran test runner for '%s{options.Slug}' solution"
-
 let checker = FSharpChecker.Create()
 
 let projectArgs =
-    let dllName = "MultipleTestsWithSingleFail.dll"
-    let projectFileName = "Fake.fsproj" 
-    let fileName1 = "/Users/erik/Code/exercism/fsharp-test-runner/test/Exercism.TestRunner.FSharp.IntegrationTests/Solutions/MultipleTestsWithMultipleFails/Fake.fs"
-    let fileName2 = "/Users/erik/Code/exercism/fsharp-test-runner/test/Exercism.TestRunner.FSharp.IntegrationTests/Solutions/MultipleTestsWithMultipleFails/FakeTests.fs"
-    let dir = Directory.GetCurrentDirectory()
-    let references =
-        AppContext.GetData("TRUSTED_PLATFORM_ASSEMBLIES").ToString().Split(Path.PathSeparator)
-        
-    references |> Seq.filter (fun a -> a.Contains("xunit") || a.Contains("crest")) |> Seq.iter (printfn "%A")
-    
-    [| yield "--simpleresolution"
-       yield "--noframework"
-       yield "--debug-"
-       yield "--define:DEBUG"
-       yield "--optimize-"
-       yield "--out:" + dllName
-       yield "--fullpaths"
-       yield "--target:library"
-       yield fileName1
-       yield fileName2
-       for r in references do
-             yield "-r:" + r |]
+    let references = AppContext.GetData("TRUSTED_PLATFORM_ASSEMBLIES").ToString().Split(Path.PathSeparator)
 
-let projectOptions =
-    // TODO: read files from .meta/config.json
-    let dllName = "MultipleTestsWithSingleFail.dll"
-    let projectFileName = "Fake.fsproj" 
-    let fileName1 = "/Users/erik/Code/exercism/fsharp-test-runner/test/Exercism.TestRunner.FSharp.IntegrationTests/Solutions/MultipleTestsWithMultipleFails/Fake.fs"
-    let fileName2 = "/Users/erik/Code/exercism/fsharp-test-runner/test/Exercism.TestRunner.FSharp.IntegrationTests/Solutions/MultipleTestsWithMultipleFails/FakeTests.fs"
-    let dir = Directory.GetCurrentDirectory()
-    let references =
-        AppContext.GetData("TRUSTED_PLATFORM_ASSEMBLIES").ToString().Split(Path.PathSeparator)
-    
-    checker.GetProjectOptionsFromCommandLineArgs(projectFileName, projectArgs)
+    [|
+        "/usr/local/share/dotnet/sdk/5.0.103/FSharp/fsc.exe"
+        "-o:/Users/erik/Code/exercism/fsharp-test-runner/src/Exercism.TestRunner.FSharp/bin/Debug/net5.0/Fake.dll"
+        "-g"
+        "--debug:portable"
+        "--noframework"
+        "--define:TRACE"
+        "--define:DEBUG"
+        "--define:NET"
+        "--define:NET5_0"
+        "--define:NETCOREAPP"
+        "--optimize-"
+        "--tailcalls-"
+        "-r:/Users/erik/.nuget/packages/fsharp.core/5.0.0/lib/netstandard2.0/FSharp.Core.dll"
+        "-r:/Users/erik/.nuget/packages/fsunit.xunit/4.0.4/lib/netstandard2.0/FsUnit.Xunit.dll"
+        "-r:/usr/local/share/dotnet/packs/Microsoft.NETCore.App.Ref/5.0.0/ref/net5.0/Microsoft.CSharp.dll"
+        "-r:/Users/erik/.nuget/packages/microsoft.testplatform.testhost/16.9.4/lib/netcoreapp2.1/Microsoft.TestPlatform.CommunicationUtilities.dll"
+        "-r:/Users/erik/.nuget/packages/microsoft.testplatform.testhost/16.9.4/lib/netcoreapp2.1/Microsoft.TestPlatform.CoreUtilities.dll"
+        "-r:/Users/erik/.nuget/packages/microsoft.testplatform.testhost/16.9.4/lib/netcoreapp2.1/Microsoft.TestPlatform.CrossPlatEngine.dll"
+        "-r:/Users/erik/.nuget/packages/microsoft.testplatform.testhost/16.9.4/lib/netcoreapp2.1/Microsoft.TestPlatform.PlatformAbstractions.dll"
+        "-r:/Users/erik/.nuget/packages/microsoft.testplatform.testhost/16.9.4/lib/netcoreapp2.1/Microsoft.TestPlatform.Utilities.dll"
+        "-r:/usr/local/share/dotnet/packs/Microsoft.NETCore.App.Ref/5.0.0/ref/net5.0/Microsoft.VisualBasic.Core.dll"
+        "-r:/usr/local/share/dotnet/packs/Microsoft.NETCore.App.Ref/5.0.0/ref/net5.0/Microsoft.VisualBasic.dll"
+        "-r:/Users/erik/.nuget/packages/microsoft.codecoverage/16.9.4/lib/netcoreapp1.0/Microsoft.VisualStudio.CodeCoverage.Shim.dll"
+        "-r:/Users/erik/.nuget/packages/microsoft.testplatform.testhost/16.9.4/lib/netcoreapp2.1/Microsoft.VisualStudio.TestPlatform.Common.dll"
+        "-r:/Users/erik/.nuget/packages/microsoft.testplatform.testhost/16.9.4/lib/netcoreapp2.1/Microsoft.VisualStudio.TestPlatform.ObjectModel.dll"
+        "-r:/usr/local/share/dotnet/packs/Microsoft.NETCore.App.Ref/5.0.0/ref/net5.0/Microsoft.Win32.Primitives.dll"
+        "-r:/usr/local/share/dotnet/packs/Microsoft.NETCore.App.Ref/5.0.0/ref/net5.0/mscorlib.dll"
+        "-r:/usr/local/share/dotnet/packs/Microsoft.NETCore.App.Ref/5.0.0/ref/net5.0/netstandard.dll"
+        "-r:/Users/erik/.nuget/packages/newtonsoft.json/9.0.1/lib/netstandard1.0/Newtonsoft.Json.dll"
+        "-r:/Users/erik/.nuget/packages/nhamcrest/2.0.1/lib/netstandard1.5/NHamcrest.dll"
+        "-r:/Users/erik/.nuget/packages/nuget.frameworks/5.0.0/lib/netstandard2.0/NuGet.Frameworks.dll"
+        "-r:/usr/local/share/dotnet/packs/Microsoft.NETCore.App.Ref/5.0.0/ref/net5.0/System.AppContext.dll"
+        "-r:/usr/local/share/dotnet/packs/Microsoft.NETCore.App.Ref/5.0.0/ref/net5.0/System.Buffers.dll"
+        "-r:/usr/local/share/dotnet/packs/Microsoft.NETCore.App.Ref/5.0.0/ref/net5.0/System.Collections.Concurrent.dll"
+        "-r:/usr/local/share/dotnet/packs/Microsoft.NETCore.App.Ref/5.0.0/ref/net5.0/System.Collections.dll"
+        "-r:/usr/local/share/dotnet/packs/Microsoft.NETCore.App.Ref/5.0.0/ref/net5.0/System.Collections.Immutable.dll"
+        "-r:/usr/local/share/dotnet/packs/Microsoft.NETCore.App.Ref/5.0.0/ref/net5.0/System.Collections.NonGeneric.dll"
+        "-r:/usr/local/share/dotnet/packs/Microsoft.NETCore.App.Ref/5.0.0/ref/net5.0/System.Collections.Specialized.dll"
+        "-r:/usr/local/share/dotnet/packs/Microsoft.NETCore.App.Ref/5.0.0/ref/net5.0/System.ComponentModel.Annotations.dll"
+        "-r:/usr/local/share/dotnet/packs/Microsoft.NETCore.App.Ref/5.0.0/ref/net5.0/System.ComponentModel.DataAnnotations.dll"
+        "-r:/usr/local/share/dotnet/packs/Microsoft.NETCore.App.Ref/5.0.0/ref/net5.0/System.ComponentModel.dll"
+        "-r:/usr/local/share/dotnet/packs/Microsoft.NETCore.App.Ref/5.0.0/ref/net5.0/System.ComponentModel.EventBasedAsync.dll"
+        "-r:/usr/local/share/dotnet/packs/Microsoft.NETCore.App.Ref/5.0.0/ref/net5.0/System.ComponentModel.Primitives.dll"
+        "-r:/usr/local/share/dotnet/packs/Microsoft.NETCore.App.Ref/5.0.0/ref/net5.0/System.ComponentModel.TypeConverter.dll"
+        "-r:/usr/local/share/dotnet/packs/Microsoft.NETCore.App.Ref/5.0.0/ref/net5.0/System.Configuration.dll"
+        "-r:/usr/local/share/dotnet/packs/Microsoft.NETCore.App.Ref/5.0.0/ref/net5.0/System.Console.dll"
+        "-r:/usr/local/share/dotnet/packs/Microsoft.NETCore.App.Ref/5.0.0/ref/net5.0/System.Core.dll"
+        "-r:/usr/local/share/dotnet/packs/Microsoft.NETCore.App.Ref/5.0.0/ref/net5.0/System.Data.Common.dll"
+        "-r:/usr/local/share/dotnet/packs/Microsoft.NETCore.App.Ref/5.0.0/ref/net5.0/System.Data.DataSetExtensions.dll"
+        "-r:/usr/local/share/dotnet/packs/Microsoft.NETCore.App.Ref/5.0.0/ref/net5.0/System.Data.dll"
+        "-r:/usr/local/share/dotnet/packs/Microsoft.NETCore.App.Ref/5.0.0/ref/net5.0/System.Diagnostics.Contracts.dll"
+        "-r:/usr/local/share/dotnet/packs/Microsoft.NETCore.App.Ref/5.0.0/ref/net5.0/System.Diagnostics.Debug.dll"
+        "-r:/usr/local/share/dotnet/packs/Microsoft.NETCore.App.Ref/5.0.0/ref/net5.0/System.Diagnostics.DiagnosticSource.dll"
+        "-r:/usr/local/share/dotnet/packs/Microsoft.NETCore.App.Ref/5.0.0/ref/net5.0/System.Diagnostics.FileVersionInfo.dll"
+        "-r:/usr/local/share/dotnet/packs/Microsoft.NETCore.App.Ref/5.0.0/ref/net5.0/System.Diagnostics.Process.dll"
+        "-r:/usr/local/share/dotnet/packs/Microsoft.NETCore.App.Ref/5.0.0/ref/net5.0/System.Diagnostics.StackTrace.dll"
+        "-r:/usr/local/share/dotnet/packs/Microsoft.NETCore.App.Ref/5.0.0/ref/net5.0/System.Diagnostics.TextWriterTraceListener.dll"
+        "-r:/usr/local/share/dotnet/packs/Microsoft.NETCore.App.Ref/5.0.0/ref/net5.0/System.Diagnostics.Tools.dll"
+        "-r:/usr/local/share/dotnet/packs/Microsoft.NETCore.App.Ref/5.0.0/ref/net5.0/System.Diagnostics.TraceSource.dll"
+        "-r:/usr/local/share/dotnet/packs/Microsoft.NETCore.App.Ref/5.0.0/ref/net5.0/System.Diagnostics.Tracing.dll"
+        "-r:/usr/local/share/dotnet/packs/Microsoft.NETCore.App.Ref/5.0.0/ref/net5.0/System.dll"
+        "-r:/usr/local/share/dotnet/packs/Microsoft.NETCore.App.Ref/5.0.0/ref/net5.0/System.Drawing.dll"
+        "-r:/usr/local/share/dotnet/packs/Microsoft.NETCore.App.Ref/5.0.0/ref/net5.0/System.Drawing.Primitives.dll"
+        "-r:/usr/local/share/dotnet/packs/Microsoft.NETCore.App.Ref/5.0.0/ref/net5.0/System.Dynamic.Runtime.dll"
+        "-r:/usr/local/share/dotnet/packs/Microsoft.NETCore.App.Ref/5.0.0/ref/net5.0/System.Formats.Asn1.dll"
+        "-r:/usr/local/share/dotnet/packs/Microsoft.NETCore.App.Ref/5.0.0/ref/net5.0/System.Globalization.Calendars.dll"
+        "-r:/usr/local/share/dotnet/packs/Microsoft.NETCore.App.Ref/5.0.0/ref/net5.0/System.Globalization.dll"
+        "-r:/usr/local/share/dotnet/packs/Microsoft.NETCore.App.Ref/5.0.0/ref/net5.0/System.Globalization.Extensions.dll"
+        "-r:/usr/local/share/dotnet/packs/Microsoft.NETCore.App.Ref/5.0.0/ref/net5.0/System.IO.Compression.Brotli.dll"
+        "-r:/usr/local/share/dotnet/packs/Microsoft.NETCore.App.Ref/5.0.0/ref/net5.0/System.IO.Compression.dll"
+        "-r:/usr/local/share/dotnet/packs/Microsoft.NETCore.App.Ref/5.0.0/ref/net5.0/System.IO.Compression.FileSystem.dll"
+        "-r:/usr/local/share/dotnet/packs/Microsoft.NETCore.App.Ref/5.0.0/ref/net5.0/System.IO.Compression.ZipFile.dll"
+        "-r:/usr/local/share/dotnet/packs/Microsoft.NETCore.App.Ref/5.0.0/ref/net5.0/System.IO.dll"
+        "-r:/usr/local/share/dotnet/packs/Microsoft.NETCore.App.Ref/5.0.0/ref/net5.0/System.IO.FileSystem.dll"
+        "-r:/usr/local/share/dotnet/packs/Microsoft.NETCore.App.Ref/5.0.0/ref/net5.0/System.IO.FileSystem.DriveInfo.dll"
+        "-r:/usr/local/share/dotnet/packs/Microsoft.NETCore.App.Ref/5.0.0/ref/net5.0/System.IO.FileSystem.Primitives.dll"
+        "-r:/usr/local/share/dotnet/packs/Microsoft.NETCore.App.Ref/5.0.0/ref/net5.0/System.IO.FileSystem.Watcher.dll"
+        "-r:/usr/local/share/dotnet/packs/Microsoft.NETCore.App.Ref/5.0.0/ref/net5.0/System.IO.IsolatedStorage.dll"
+        "-r:/usr/local/share/dotnet/packs/Microsoft.NETCore.App.Ref/5.0.0/ref/net5.0/System.IO.MemoryMappedFiles.dll"
+        "-r:/usr/local/share/dotnet/packs/Microsoft.NETCore.App.Ref/5.0.0/ref/net5.0/System.IO.Pipes.dll"
+        "-r:/usr/local/share/dotnet/packs/Microsoft.NETCore.App.Ref/5.0.0/ref/net5.0/System.IO.UnmanagedMemoryStream.dll"
+        "-r:/usr/local/share/dotnet/packs/Microsoft.NETCore.App.Ref/5.0.0/ref/net5.0/System.Linq.dll"
+        "-r:/usr/local/share/dotnet/packs/Microsoft.NETCore.App.Ref/5.0.0/ref/net5.0/System.Linq.Expressions.dll"
+        "-r:/usr/local/share/dotnet/packs/Microsoft.NETCore.App.Ref/5.0.0/ref/net5.0/System.Linq.Parallel.dll"
+        "-r:/usr/local/share/dotnet/packs/Microsoft.NETCore.App.Ref/5.0.0/ref/net5.0/System.Linq.Queryable.dll"
+        "-r:/usr/local/share/dotnet/packs/Microsoft.NETCore.App.Ref/5.0.0/ref/net5.0/System.Memory.dll"
+        "-r:/usr/local/share/dotnet/packs/Microsoft.NETCore.App.Ref/5.0.0/ref/net5.0/System.Net.dll"
+        "-r:/usr/local/share/dotnet/packs/Microsoft.NETCore.App.Ref/5.0.0/ref/net5.0/System.Net.Http.dll"
+        "-r:/usr/local/share/dotnet/packs/Microsoft.NETCore.App.Ref/5.0.0/ref/net5.0/System.Net.Http.Json.dll"
+        "-r:/usr/local/share/dotnet/packs/Microsoft.NETCore.App.Ref/5.0.0/ref/net5.0/System.Net.HttpListener.dll"
+        "-r:/usr/local/share/dotnet/packs/Microsoft.NETCore.App.Ref/5.0.0/ref/net5.0/System.Net.Mail.dll"
+        "-r:/usr/local/share/dotnet/packs/Microsoft.NETCore.App.Ref/5.0.0/ref/net5.0/System.Net.NameResolution.dll"
+        "-r:/usr/local/share/dotnet/packs/Microsoft.NETCore.App.Ref/5.0.0/ref/net5.0/System.Net.NetworkInformation.dll"
+        "-r:/usr/local/share/dotnet/packs/Microsoft.NETCore.App.Ref/5.0.0/ref/net5.0/System.Net.Ping.dll"
+        "-r:/usr/local/share/dotnet/packs/Microsoft.NETCore.App.Ref/5.0.0/ref/net5.0/System.Net.Primitives.dll"
+        "-r:/usr/local/share/dotnet/packs/Microsoft.NETCore.App.Ref/5.0.0/ref/net5.0/System.Net.Requests.dll"
+        "-r:/usr/local/share/dotnet/packs/Microsoft.NETCore.App.Ref/5.0.0/ref/net5.0/System.Net.Security.dll"
+        "-r:/usr/local/share/dotnet/packs/Microsoft.NETCore.App.Ref/5.0.0/ref/net5.0/System.Net.ServicePoint.dll"
+        "-r:/usr/local/share/dotnet/packs/Microsoft.NETCore.App.Ref/5.0.0/ref/net5.0/System.Net.Sockets.dll"
+        "-r:/usr/local/share/dotnet/packs/Microsoft.NETCore.App.Ref/5.0.0/ref/net5.0/System.Net.WebClient.dll"
+        "-r:/usr/local/share/dotnet/packs/Microsoft.NETCore.App.Ref/5.0.0/ref/net5.0/System.Net.WebHeaderCollection.dll"
+        "-r:/usr/local/share/dotnet/packs/Microsoft.NETCore.App.Ref/5.0.0/ref/net5.0/System.Net.WebProxy.dll"
+        "-r:/usr/local/share/dotnet/packs/Microsoft.NETCore.App.Ref/5.0.0/ref/net5.0/System.Net.WebSockets.Client.dll"
+        "-r:/usr/local/share/dotnet/packs/Microsoft.NETCore.App.Ref/5.0.0/ref/net5.0/System.Net.WebSockets.dll"
+        "-r:/usr/local/share/dotnet/packs/Microsoft.NETCore.App.Ref/5.0.0/ref/net5.0/System.Numerics.dll"
+        "-r:/usr/local/share/dotnet/packs/Microsoft.NETCore.App.Ref/5.0.0/ref/net5.0/System.Numerics.Vectors.dll"
+        "-r:/usr/local/share/dotnet/packs/Microsoft.NETCore.App.Ref/5.0.0/ref/net5.0/System.ObjectModel.dll"
+        "-r:/usr/local/share/dotnet/packs/Microsoft.NETCore.App.Ref/5.0.0/ref/net5.0/System.Reflection.DispatchProxy.dll"
+        "-r:/usr/local/share/dotnet/packs/Microsoft.NETCore.App.Ref/5.0.0/ref/net5.0/System.Reflection.dll"
+        "-r:/usr/local/share/dotnet/packs/Microsoft.NETCore.App.Ref/5.0.0/ref/net5.0/System.Reflection.Emit.dll"
+        "-r:/usr/local/share/dotnet/packs/Microsoft.NETCore.App.Ref/5.0.0/ref/net5.0/System.Reflection.Emit.ILGeneration.dll"
+        "-r:/usr/local/share/dotnet/packs/Microsoft.NETCore.App.Ref/5.0.0/ref/net5.0/System.Reflection.Emit.Lightweight.dll"
+        "-r:/usr/local/share/dotnet/packs/Microsoft.NETCore.App.Ref/5.0.0/ref/net5.0/System.Reflection.Extensions.dll"
+        "-r:/usr/local/share/dotnet/packs/Microsoft.NETCore.App.Ref/5.0.0/ref/net5.0/System.Reflection.Metadata.dll"
+        "-r:/usr/local/share/dotnet/packs/Microsoft.NETCore.App.Ref/5.0.0/ref/net5.0/System.Reflection.Primitives.dll"
+        "-r:/usr/local/share/dotnet/packs/Microsoft.NETCore.App.Ref/5.0.0/ref/net5.0/System.Reflection.TypeExtensions.dll"
+        "-r:/usr/local/share/dotnet/packs/Microsoft.NETCore.App.Ref/5.0.0/ref/net5.0/System.Resources.Reader.dll"
+        "-r:/usr/local/share/dotnet/packs/Microsoft.NETCore.App.Ref/5.0.0/ref/net5.0/System.Resources.ResourceManager.dll"
+        "-r:/usr/local/share/dotnet/packs/Microsoft.NETCore.App.Ref/5.0.0/ref/net5.0/System.Resources.Writer.dll"
+        "-r:/usr/local/share/dotnet/packs/Microsoft.NETCore.App.Ref/5.0.0/ref/net5.0/System.Runtime.CompilerServices.Unsafe.dll"
+        "-r:/usr/local/share/dotnet/packs/Microsoft.NETCore.App.Ref/5.0.0/ref/net5.0/System.Runtime.CompilerServices.VisualC.dll"
+        "-r:/usr/local/share/dotnet/packs/Microsoft.NETCore.App.Ref/5.0.0/ref/net5.0/System.Runtime.dll"
+        "-r:/usr/local/share/dotnet/packs/Microsoft.NETCore.App.Ref/5.0.0/ref/net5.0/System.Runtime.Extensions.dll"
+        "-r:/usr/local/share/dotnet/packs/Microsoft.NETCore.App.Ref/5.0.0/ref/net5.0/System.Runtime.Handles.dll"
+        "-r:/usr/local/share/dotnet/packs/Microsoft.NETCore.App.Ref/5.0.0/ref/net5.0/System.Runtime.InteropServices.dll"
+        "-r:/usr/local/share/dotnet/packs/Microsoft.NETCore.App.Ref/5.0.0/ref/net5.0/System.Runtime.InteropServices.RuntimeInformation.dll"
+        "-r:/usr/local/share/dotnet/packs/Microsoft.NETCore.App.Ref/5.0.0/ref/net5.0/System.Runtime.Intrinsics.dll"
+        "-r:/usr/local/share/dotnet/packs/Microsoft.NETCore.App.Ref/5.0.0/ref/net5.0/System.Runtime.Loader.dll"
+        "-r:/usr/local/share/dotnet/packs/Microsoft.NETCore.App.Ref/5.0.0/ref/net5.0/System.Runtime.Numerics.dll"
+        "-r:/usr/local/share/dotnet/packs/Microsoft.NETCore.App.Ref/5.0.0/ref/net5.0/System.Runtime.Serialization.dll"
+        "-r:/usr/local/share/dotnet/packs/Microsoft.NETCore.App.Ref/5.0.0/ref/net5.0/System.Runtime.Serialization.Formatters.dll"
+        "-r:/usr/local/share/dotnet/packs/Microsoft.NETCore.App.Ref/5.0.0/ref/net5.0/System.Runtime.Serialization.Json.dll"
+        "-r:/usr/local/share/dotnet/packs/Microsoft.NETCore.App.Ref/5.0.0/ref/net5.0/System.Runtime.Serialization.Primitives.dll"
+        "-r:/usr/local/share/dotnet/packs/Microsoft.NETCore.App.Ref/5.0.0/ref/net5.0/System.Runtime.Serialization.Xml.dll"
+        "-r:/usr/local/share/dotnet/packs/Microsoft.NETCore.App.Ref/5.0.0/ref/net5.0/System.Security.Claims.dll"
+        "-r:/usr/local/share/dotnet/packs/Microsoft.NETCore.App.Ref/5.0.0/ref/net5.0/System.Security.Cryptography.Algorithms.dll"
+        "-r:/usr/local/share/dotnet/packs/Microsoft.NETCore.App.Ref/5.0.0/ref/net5.0/System.Security.Cryptography.Csp.dll"
+        "-r:/usr/local/share/dotnet/packs/Microsoft.NETCore.App.Ref/5.0.0/ref/net5.0/System.Security.Cryptography.Encoding.dll"
+        "-r:/usr/local/share/dotnet/packs/Microsoft.NETCore.App.Ref/5.0.0/ref/net5.0/System.Security.Cryptography.Primitives.dll"
+        "-r:/usr/local/share/dotnet/packs/Microsoft.NETCore.App.Ref/5.0.0/ref/net5.0/System.Security.Cryptography.X509Certificates.dll"
+        "-r:/usr/local/share/dotnet/packs/Microsoft.NETCore.App.Ref/5.0.0/ref/net5.0/System.Security.dll"
+        "-r:/usr/local/share/dotnet/packs/Microsoft.NETCore.App.Ref/5.0.0/ref/net5.0/System.Security.Principal.dll"
+        "-r:/usr/local/share/dotnet/packs/Microsoft.NETCore.App.Ref/5.0.0/ref/net5.0/System.Security.SecureString.dll"
+        "-r:/usr/local/share/dotnet/packs/Microsoft.NETCore.App.Ref/5.0.0/ref/net5.0/System.ServiceModel.Web.dll"
+        "-r:/usr/local/share/dotnet/packs/Microsoft.NETCore.App.Ref/5.0.0/ref/net5.0/System.ServiceProcess.dll"
+        "-r:/usr/local/share/dotnet/packs/Microsoft.NETCore.App.Ref/5.0.0/ref/net5.0/System.Text.Encoding.CodePages.dll"
+        "-r:/usr/local/share/dotnet/packs/Microsoft.NETCore.App.Ref/5.0.0/ref/net5.0/System.Text.Encoding.dll"
+        "-r:/usr/local/share/dotnet/packs/Microsoft.NETCore.App.Ref/5.0.0/ref/net5.0/System.Text.Encoding.Extensions.dll"
+        "-r:/usr/local/share/dotnet/packs/Microsoft.NETCore.App.Ref/5.0.0/ref/net5.0/System.Text.Encodings.Web.dll"
+        "-r:/usr/local/share/dotnet/packs/Microsoft.NETCore.App.Ref/5.0.0/ref/net5.0/System.Text.Json.dll"
+        "-r:/usr/local/share/dotnet/packs/Microsoft.NETCore.App.Ref/5.0.0/ref/net5.0/System.Text.RegularExpressions.dll"
+        "-r:/usr/local/share/dotnet/packs/Microsoft.NETCore.App.Ref/5.0.0/ref/net5.0/System.Threading.Channels.dll"
+        "-r:/usr/local/share/dotnet/packs/Microsoft.NETCore.App.Ref/5.0.0/ref/net5.0/System.Threading.dll"
+        "-r:/usr/local/share/dotnet/packs/Microsoft.NETCore.App.Ref/5.0.0/ref/net5.0/System.Threading.Overlapped.dll"
+        "-r:/usr/local/share/dotnet/packs/Microsoft.NETCore.App.Ref/5.0.0/ref/net5.0/System.Threading.Tasks.Dataflow.dll"
+        "-r:/usr/local/share/dotnet/packs/Microsoft.NETCore.App.Ref/5.0.0/ref/net5.0/System.Threading.Tasks.dll"
+        "-r:/usr/local/share/dotnet/packs/Microsoft.NETCore.App.Ref/5.0.0/ref/net5.0/System.Threading.Tasks.Extensions.dll"
+        "-r:/usr/local/share/dotnet/packs/Microsoft.NETCore.App.Ref/5.0.0/ref/net5.0/System.Threading.Tasks.Parallel.dll"
+        "-r:/usr/local/share/dotnet/packs/Microsoft.NETCore.App.Ref/5.0.0/ref/net5.0/System.Threading.Thread.dll"
+        "-r:/usr/local/share/dotnet/packs/Microsoft.NETCore.App.Ref/5.0.0/ref/net5.0/System.Threading.ThreadPool.dll"
+        "-r:/usr/local/share/dotnet/packs/Microsoft.NETCore.App.Ref/5.0.0/ref/net5.0/System.Threading.Timer.dll"
+        "-r:/usr/local/share/dotnet/packs/Microsoft.NETCore.App.Ref/5.0.0/ref/net5.0/System.Transactions.dll"
+        "-r:/usr/local/share/dotnet/packs/Microsoft.NETCore.App.Ref/5.0.0/ref/net5.0/System.Transactions.Local.dll"
+        "-r:/usr/local/share/dotnet/packs/Microsoft.NETCore.App.Ref/5.0.0/ref/net5.0/System.ValueTuple.dll"
+        "-r:/usr/local/share/dotnet/packs/Microsoft.NETCore.App.Ref/5.0.0/ref/net5.0/System.Web.dll"
+        "-r:/usr/local/share/dotnet/packs/Microsoft.NETCore.App.Ref/5.0.0/ref/net5.0/System.Web.HttpUtility.dll"
+        "-r:/usr/local/share/dotnet/packs/Microsoft.NETCore.App.Ref/5.0.0/ref/net5.0/System.Windows.dll"
+        "-r:/usr/local/share/dotnet/packs/Microsoft.NETCore.App.Ref/5.0.0/ref/net5.0/System.Xml.dll"
+        "-r:/usr/local/share/dotnet/packs/Microsoft.NETCore.App.Ref/5.0.0/ref/net5.0/System.Xml.Linq.dll"
+        "-r:/usr/local/share/dotnet/packs/Microsoft.NETCore.App.Ref/5.0.0/ref/net5.0/System.Xml.ReaderWriter.dll"
+        "-r:/usr/local/share/dotnet/packs/Microsoft.NETCore.App.Ref/5.0.0/ref/net5.0/System.Xml.Serialization.dll"
+        "-r:/usr/local/share/dotnet/packs/Microsoft.NETCore.App.Ref/5.0.0/ref/net5.0/System.Xml.XDocument.dll"
+        "-r:/usr/local/share/dotnet/packs/Microsoft.NETCore.App.Ref/5.0.0/ref/net5.0/System.Xml.XmlDocument.dll"
+        "-r:/usr/local/share/dotnet/packs/Microsoft.NETCore.App.Ref/5.0.0/ref/net5.0/System.Xml.XmlSerializer.dll"
+        "-r:/usr/local/share/dotnet/packs/Microsoft.NETCore.App.Ref/5.0.0/ref/net5.0/System.Xml.XPath.dll"
+        "-r:/usr/local/share/dotnet/packs/Microsoft.NETCore.App.Ref/5.0.0/ref/net5.0/System.Xml.XPath.XDocument.dll"
+        "-r:/Users/erik/.nuget/packages/microsoft.testplatform.testhost/16.9.4/lib/netcoreapp2.1/testhost.dll"
+        "-r:/usr/local/share/dotnet/packs/Microsoft.NETCore.App.Ref/5.0.0/ref/net5.0/WindowsBase.dll"
+        "-r:/Users/erik/.nuget/packages/xunit.abstractions/2.0.3/lib/netstandard2.0/xunit.abstractions.dll"
+        "-r:/Users/erik/.nuget/packages/xunit.assert/2.4.1/lib/netstandard1.1/xunit.assert.dll"
+        "-r:/Users/erik/.nuget/packages/xunit.extensibility.core/2.4.1/lib/netstandard1.1/xunit.core.dll"
+        "-r:/Users/erik/.nuget/packages/xunit.extensibility.execution/2.4.1/lib/netstandard1.1/xunit.execution.dotnet.dll"
+        "--target:exe"
+        "--warn:3"
+        "--warnaserror:3239,76"
+        "--fullpaths"
+        "--flaterrors"
+        "--highentropyva+"
+        "--targetprofile:netcore"
+        "--nocopyfsharpcore"
+        "--deterministic+"
+        "--simpleresolution"
+        "/Users/erik/Code/exercism/fsharp-test-runner/test/Exercism.TestRunner.FSharp.IntegrationTests/Solutions/SingleTestThatPasses/obj/Debug/net5.0/.NETCoreApp,Version=v5.0.AssemblyAttributes.fs"
+        "/Users/erik/Code/exercism/fsharp-test-runner/test/Exercism.TestRunner.FSharp.IntegrationTests/Solutions/SingleTestThatPasses/obj/Debug/net5.0/Fake.AssemblyInfo.fs"
+        "/Users/erik/Code/exercism/fsharp-test-runner/test/Exercism.TestRunner.FSharp.IntegrationTests/Solutions/SingleTestThatPasses/Fake.fs"
+        "/Users/erik/Code/exercism/fsharp-test-runner/test/Exercism.TestRunner.FSharp.IntegrationTests/Solutions/SingleTestThatPasses/FakeTests.fs"
+        "/Users/erik/.nuget/packages/microsoft.net.test.sdk/16.9.4/build/netcoreapp2.1/Microsoft.NET.Test.Sdk.Program.fs"
+    |]
 
 [<EntryPoint>]
 let main argv =
+//    let (errors, result) = checker.Compile(projectArgs) |> Async.RunSynchronously
+//    [ for error in errors -> printfn "error: %A" error ] |> ignore
     
-    let toolsPath = Ionide.ProjInfo.Init.init()
-    let loader = Ionide.ProjInfo.WorkspaceLoader.Create(toolsPath, [])
-    let projs = loader.LoadProjects(["/Users/erik/Code/exercism/fsharp-test-runner/test/Exercism.TestRunner.FSharp.IntegrationTests/Solutions/MultipleTestsWithSingleFail/Fake.fsproj"])
-    let proj = Seq.head projs
-    
-    
-    let x = Ionide.ProjInfo.FCS.mapToFSharpProjectOptions proj projs
-//    let (a, b) = checker.GetParsingOptionsFromProjectOptions(x)
-    let e = checker.ParseAndCheckProject(x) |> Async.RunSynchronously
-//    let args = Ionide.ProjInfo.ProjectLoader.getFscArgs(x)
+    Process.Start("/usr/local/share/dotnet/dotnet", projectArgs).WaitForExit()
 
-    // TODO: use parsed input files
-    let (errors, result) = checker.Compile(projectArgs) |> Async.RunSynchronously
-    [ for error in errors -> printfn "%A" error ]
+    Assembly.LoadFrom("Fake.dll")
     
-//    let references = AppContext.GetData("TRUSTED_PLATFORM_ASSEMBLIES").ToString().Split(Path.PathSeparator)
-//    for ref in references do
-//        Assembly.LoadFrom(ref)
-
-//    for ass in AssemblyLoadContext.Default.Assemblies do
-//        printfn $"{ass.FullName}"
-    
-//    AssemblyLoadContext.Default.LoadFromAssemblyPath(Directory.GetCurrentDirectory() + "/MultipleTestsWithSingleFail.dll")
-//    AssemblyLoadContext.Default.LoadFromAssemblyPath(Directory.GetCurrentDirectory() + "/NHamcrest.dll")
-//    AssemblyLoadContext.Default.LoadFromAssemblyPath(Directory.GetCurrentDirectory() + "/FsUnit.Xunit.dll")
-//    AssemblyLoadContext.Default.LoadFromAssemblyPath(Directory.GetCurrentDirectory() + "/xunit.abstractions.dll")
-//    AssemblyLoadContext.Default.LoadFromAssemblyPath(Directory.GetCurrentDirectory() + "/xunit.assert.dll")
-//    AssemblyLoadContext.Default.LoadFromAssemblyPath(Directory.GetCurrentDirectory() + "/xunit.core.dll")
-//    AssemblyLoadContext.Default.LoadFromAssemblyPath(Directory.GetCurrentDirectory() + "/xunit.execution.dotnet.dll")
-//    AssemblyLoadContext.Default.LoadFromAssemblyPath(Directory.GetCurrentDirectory() + "/xunit.runner.utility.netcoreapp10.dll")
-    
-//    for ass in AssemblyLoadContext.Default.Assemblies do
-//        printfn $"{ass.FullName}: {ass.Location}"
-    
-//    Assembly.LoadFrom("/Users/erik/.nuget/packages/nhamcrest/2.0.1/lib/netstandard1.5/NHamcrest.dll") |> ignore
-//    Assembly.LoadFile("/Users/erik/Code/exercism/fsharp-test-runner/src/Exercism.TestRunner.FSharp/temp/MultipleTestsWithSingleFail.dll") |> ignore
-
     let tests = ConcurrentStack<TestInfo>()
     let finished = new ManualResetEventSlim()
-    let runner = AssemblyRunner.WithoutAppDomain("MultipleTestsWithSingleFail.dll")
+    let runner = AssemblyRunner.WithoutAppDomain("Fake.dll")
     runner.OnTestFailed <- Action<TestFailedInfo>(tests.Push)
     runner.OnTestPassed <- Action<TestPassedInfo>(tests.Push)
     runner.OnExecutionComplete <- Action<ExecutionCompleteInfo>(fun info -> finished.Set())
@@ -148,8 +241,3 @@ let main argv =
 //    [ for x in wholeProjectResults.AssemblySignature.Entities -> printfn "%A" x.DisplayName ]
     
     0
-//    match parseOptions argv with
-//    | Some options ->
-//        runTestRunner options
-//        0
-//    | None -> 1
