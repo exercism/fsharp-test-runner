@@ -1,12 +1,6 @@
 #!/bin/sh
 # /opt/test-runner/Exercism.TestRunner.FSharp $1 $2 $3
 
-# echo 'test'
-# ls -al /root/.nuget/packages/fsharp.core/5.0.0/lib
-# ls -al /root/.nuget/packages/fsharp.compiler.tools/10.2.3/tools/
-# ls -al /root/.nuget/packages/fsharp.compiler.tools/10.2.3/tools/netcoreapp1.0
-# dotnet /root/.nuget/packages/fsharp.compiler.tools/10.2.3/tools/fsc.exe
-
  /usr/share/dotnet/dotnet "/usr/share/dotnet/sdk/5.0.100/FSharp/fsc.exe"  \
     -o:obj/Debug/net5.0/app.dll \
     -g \
