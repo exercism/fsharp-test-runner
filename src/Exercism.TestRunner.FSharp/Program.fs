@@ -9,9 +9,10 @@ open System.Runtime.InteropServices
 open System.Threading
 
 open FSharp.Compiler.SourceCodeServices
+open FSharp.Compiler.Text
 open Xunit.Runners
 
-let checker = FSharpChecker.Create()
+let checker = FSharpChecker.Create(keepAssemblyContents = true)
 
 let projectArgs =
     let references =
@@ -20,7 +21,7 @@ let projectArgs =
             .ToString()
             .Split(Path.PathSeparator)
 
-    if System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(OSPlatform.Windows) then
+    if RuntimeInformation.IsOSPlatform(OSPlatform.Windows) then
         [|  @"fsc.exe"
             @"-o:Fake.dll"
             @"-g"
@@ -478,6 +479,38 @@ let projectArgs =
 
 [<EntryPoint>]
 let main argv =
+    let runtimeDir = System.Runtime.InteropServices.RuntimeEnvironment.GetRuntimeDirectory()
+    
+    if File.Exists("Fake.dll") then
+        File.Delete("Fake.dll")
+    
+    let projectOptions = checker.GetProjectOptionsFromCommandLineArgs("Fake.fsproj", projectArgs |> Array.tail)
+    let wholeProjectResults = checker.ParseAndCheckProject(projectOptions) |> Async.RunSynchronously
+//    [ for error in wholeProjectResults.Errors -> printfn "error: %A" error ] |> ignore
+//    [ for x in wholeProjectResults.AssemblySignature.Entities -> printfn "%A" x.DisplayName ]
+    
+    [ for implFile in wholeProjectResults.AssemblyContents.ImplementationFiles ->
+        printfn "%A" implFile.FileName ]
+    
+    let parsedInputs = 
+        [ for implFile in wholeProjectResults.AssemblyContents.ImplementationFiles ->
+            checker.GetBackgroundParseResultsForFileInProject(implFile.FileName, projectOptions) ]
+        |> Async.Parallel
+        |> Async.RunSynchronously
+        |> Array.map (fun x -> x.ParseTree |> Option.get)
+
+    let refs = 
+        projectArgs
+        |> Array.filter (fun x -> x.StartsWith("-r"))
+        |> Array.map (fun x -> x.Substring(3))
+        |> Array.toList
+    
+    let (errors, result) =
+        checker.Compile(parsedInputs |> List.ofArray, "Fake", "Fake.dll", refs)
+        |> Async.RunSynchronously
+    
+    checker.Compile(wholeProjectResults.AssemblyContents.ImplementationFiles, "Fake.dll")
+    
     let (errors, result) = checker.Compile(projectArgs) |> Async.RunSynchronously
     [ for error in errors -> printfn "error: %A" error ] |> ignore
 
@@ -485,7 +518,7 @@ let main argv =
 //        .Start("/usr/local/share/dotnet/dotnet", projectArgs)
 //        .WaitForExit()
 
-    Assembly.LoadFrom("Fake.dll")
+//    Assembly.LoadFrom("Fake.dll")
 
     let tests = ConcurrentStack<TestInfo>()
     let finished = new ManualResetEventSlim()
