@@ -509,7 +509,7 @@ let main argv =
         checker.Compile(parsedInputs |> List.ofArray, "Fake", "Fake.dll", refs)
         |> Async.RunSynchronously
     
-    checker.Compile(wholeProjectResults.AssemblyContents.ImplementationFiles, "Fake.dll")
+//    checker.Compile(wholeProjectResults.AssemblyContents.ImplementationFiles, "Fake.dll")
     
     let (errors, result) = checker.Compile(projectArgs) |> Async.RunSynchronously
     [ for error in errors -> printfn "error: %A" error ] |> ignore
