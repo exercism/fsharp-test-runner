@@ -1,5 +1,6 @@
 module Exercism.TestRunner.FSharp.Testing
 
+open System
 open System.Diagnostics
 open System.IO
 open System.Xml.Serialization
@@ -148,12 +149,63 @@ module TestResults =
 
         visitor.VisitInput(originalTestTree) |> ignore
         testCode
+        
+    let private toTaskId
+        (originalTestTree: ParsedInput)
+        (xmlUnitTestResult: XmlUnitTestResult)
+        =
+        let originalTestName =
+            $"[{xmlUnitTestResult.TestName.[xmlUnitTestResult.TestName.IndexOf('.') + 1..]}]"
+
+        let mutable taskId = Option<int>.None
+
+        let visitor =
+            { new SyntaxVisitor() with
+                member this.VisitSynModuleDecl(moduleDecl) =
+                    match moduleDecl with
+                    | SynModuleDecl.Let (_,
+                                         [ Binding (_,
+                                                    _,
+                                                    _,
+                                                    _,
+                                                    attrs,
+                                                    _,
+                                                    _,
+                                                    SynPat.LongIdent (LongIdentWithDots (id, _), _, _, _, _, _),
+                                                    _,
+                                                    _,
+                                                    _,
+                                                    _) ],
+                                         _) when (id.ToString()) = originalTestName ->
+                        
+                        taskId <-
+                            attrs
+                            |> Seq.collect (fun attrList -> attrList.Attributes)
+                            |> Seq.tryPick (fun attr ->
+                                let (LongIdentWithDots (attrId, _)) = attr.TypeName
+                                if (attrId.ToString()) = "[Task]" then
+                                    match attr.ArgExpr with
+                                    | SynExpr.Paren(SynExpr.Const(SynConst.Int32(i), _), _, _, _) ->
+                                        Some (int i)
+                                    | _ -> None
+                                else                                
+                                    None
+                            )
+                    | _ -> ()
+
+                    base.VisitSynModuleDecl(moduleDecl) }
+
+        visitor.VisitInput(originalTestTree) |> ignore
+        taskId
 
     let private toTestResult originalTestCode originalTestTree (xmlUnitTestResult: XmlUnitTestResult) =
         { Name = xmlUnitTestResult |> toName
           Status = xmlUnitTestResult |> toStatus
           Message = xmlUnitTestResult |> toMessage
           Output = xmlUnitTestResult |> toOutput
+          TaskId =
+              xmlUnitTestResult
+              |> toTaskId originalTestTree
           TestCode =
               xmlUnitTestResult
               |> toTestCode originalTestCode originalTestTree }

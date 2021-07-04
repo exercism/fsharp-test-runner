@@ -5,12 +5,14 @@
     {
       "name": "FakeTests.Add should add numbers",
       "status": "pass",
-      "test_code": "add 1 1 |\u003E should equal 2"
+      "test_code": "add 1 1 |\u003E should equal 2",
+      "task_id": 1
     },
     {
       "name": "FakeTests.Mul should multiply numbers",
       "status": "pass",
-      "test_code": "mul 2 3 |\u003E should equal 6"
+      "test_code": "mul 2 3 |\u003E should equal 6",
+      "task_id": 3
     },
     {
       "name": "FakeTests.Sub should subtract numbers",

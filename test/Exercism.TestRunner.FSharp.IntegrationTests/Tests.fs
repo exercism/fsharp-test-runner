@@ -1,10 +1,10 @@
 module Exercism.TestRunner.FSharp.IntegrationTests.Tests
 
+open System
 open System.IO
 open Xunit
 open FsUnit.Xunit
 
-open System.Text.Encodings.Web
 open System.Text.Json
 open System.Text.Json.Serialization
 
@@ -23,10 +23,16 @@ type JsonTestResult =
       [<JsonPropertyName("message")>]
       Message: string
       [<JsonPropertyName("output")>]
-      Output: string }
+      Output: string
+      [<JsonPropertyName("test_code")>]
+      TestCode: string
+      [<JsonPropertyName("task_id")>]
+      TaskId: Nullable<int> }
 
 type JsonTestRun =
-    { [<JsonPropertyName("status")>]
+    { [<JsonPropertyName("version")>]
+      Version: int
+      [<JsonPropertyName("status")>]
       Status: string
       [<JsonPropertyName("message")>]
       Message: string
@@ -135,3 +141,11 @@ let ``Multiple tests with test ouput exceeding limit`` () =
 [<Fact>]
 let ``Different test code formats`` () =
     assertSolutionHasExpectedResults "DifferentTestCodeFormats"
+
+[<Fact>]
+let ``All tests with task`` () =
+    assertSolutionHasExpectedResults "AllTestsWithTask"
+
+[<Fact>]
+let ``Some tests with task`` () =
+    assertSolutionHasExpectedResults "SomeTestsWithTask"

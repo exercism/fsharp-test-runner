@@ -1,5 +1,6 @@
 module Exercism.TestRunner.FSharp.Output
 
+open System
 open System.Text.Json
 open System.IO
 open System.Text.Json.Serialization
@@ -15,7 +16,9 @@ type JsonTestResult =
       [<JsonPropertyName("output")>]
       Output: string
       [<JsonPropertyName("test_code")>]
-      TestCode: string }
+      TestCode: string
+      [<JsonPropertyName("task_id")>]
+      TaskId: Nullable<int> }
 
 type JsonTestRun =
     { [<JsonPropertyName("version")>]
@@ -42,10 +45,11 @@ let private toJsonTestResult (testResult: TestResult) =
       Message = testResult.Message |> Option.toObj
       Output = testResult.Output |> Option.toObj
       TestCode = testResult.TestCode
+      TaskId = testResult.TaskId |> Option.toNullable
       Status = toJsonTestStatus testResult.Status }
 
 let private toJsonTestRun (testRun: TestRun) =
-    { Version = 2
+    { Version = 3
       Message = testRun.Message |> Option.toObj
       Status = toJsonTestStatus testRun.Status
       Tests =

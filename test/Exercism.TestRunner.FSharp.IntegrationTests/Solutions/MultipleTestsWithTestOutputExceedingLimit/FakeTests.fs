@@ -2,6 +2,7 @@ module FakeTests
 
 open Xunit
 open FsUnit.Xunit
+open Exercism.Tests
 open Fake
 
 [<Fact>]
