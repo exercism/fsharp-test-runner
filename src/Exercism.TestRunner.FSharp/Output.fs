@@ -44,7 +44,7 @@ let private toJsonTestResult (testResult: TestResult) =
     { Name = testResult.Name
       Message = testResult.Message |> Option.toObj
       Output = testResult.Output |> Option.toObj
-      TestCode = testResult.TestCode
+      TestCode = testResult.TestCode |> Option.toObj
       TaskId = testResult.TaskId |> Option.toNullable
       Status = toJsonTestStatus testResult.Status }
 

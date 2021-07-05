@@ -10,7 +10,7 @@ type TestResult =
       Message: string option
       Output: string option
       TaskId: int option
-      TestCode: string
+      TestCode: string option
       Status: TestStatus }
 
 type TestRun =

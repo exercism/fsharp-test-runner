@@ -103,112 +103,70 @@ module TestResults =
         |> Option.bind (fun output -> output.StdOut |> Option.ofObj)
         |> Option.map String.normalize
         |> Option.map truncate
-
-    let private toTestCode
-        (originalTestCode: ISourceText)
-        (originalTestTree: ParsedInput)
-        (xmlUnitTestResult: XmlUnitTestResult)
-        =
-        let originalTestName =
-            $"[{xmlUnitTestResult.TestName.[xmlUnitTestResult.TestName.IndexOf('.') + 1..]}]"
-
-        let mutable testCode = ""
-
-        let visitor =
-            { new SyntaxVisitor() with
-                member this.VisitSynModuleDecl(moduleDecl) =
-                    match moduleDecl with
-                    | SynModuleDecl.Let (_,
-                                         [ Binding (_,
-                                                    _,
-                                                    _,
-                                                    _,
-                                                    _,
-                                                    _,
-                                                    _,
-                                                    SynPat.LongIdent (LongIdentWithDots (id, _), _, _, _, _, _),
-                                                    _,
-                                                    expr,
-                                                    _,
-                                                    _) ],
-                                         _) when (id.ToString()) = originalTestName ->
-                        testCode <-
-                            if expr.Range.StartLine = expr.Range.EndLine then
-                                originalTestCode.GetLineString(
-                                    expr.Range.StartLine - 1
-                                ).[expr.Range.StartColumn - 1..expr.Range.EndColumn - 1]
-                                    .Trim()
-                            else
-                                [ expr.Range.StartLine .. expr.Range.EndLine ]
-                                |> List.map
-                                    (fun line -> originalTestCode.GetLineString(line - 1).[expr.Range.StartColumn..])
-                                |> String.concat "\n"
-                    | _ -> ()
-
-                    base.VisitSynModuleDecl(moduleDecl) }
-
-        visitor.VisitInput(originalTestTree) |> ignore
-        testCode
         
-    let private toTaskId
-        (originalTestTree: ParsedInput)
-        (xmlUnitTestResult: XmlUnitTestResult)
-        =
+    let private findTestMethodBinding (originalTestTree: ParsedInput) (xmlUnitTestResult: XmlUnitTestResult) =
         let originalTestName =
             $"[{xmlUnitTestResult.TestName.[xmlUnitTestResult.TestName.IndexOf('.') + 1..]}]"
 
-        let mutable taskId = Option<int>.None
+        let mutable testMethodBinding = None
 
         let visitor =
             { new SyntaxVisitor() with
                 member this.VisitSynModuleDecl(moduleDecl) =
                     match moduleDecl with
-                    | SynModuleDecl.Let (_,
-                                         [ Binding (_,
-                                                    _,
-                                                    _,
-                                                    _,
-                                                    attrs,
-                                                    _,
-                                                    _,
-                                                    SynPat.LongIdent (LongIdentWithDots (id, _), _, _, _, _, _),
-                                                    _,
-                                                    _,
-                                                    _,
-                                                    _) ],
-                                         _) when (id.ToString()) = originalTestName ->
-                        
-                        taskId <-
-                            attrs
-                            |> Seq.collect (fun attrList -> attrList.Attributes)
-                            |> Seq.tryPick (fun attr ->
-                                let (LongIdentWithDots (attrId, _)) = attr.TypeName
-                                if (attrId.ToString()) = "[Task]" then
-                                    match attr.ArgExpr with
-                                    | SynExpr.Paren(SynExpr.Const(SynConst.Int32(i), _), _, _, _) ->
-                                        Some (int i)
-                                    | _ -> None
-                                else                                
-                                    None
-                            )
+                    | SynModuleDecl.Let
+                        (_,
+                         [ Binding (_,
+                                    _,
+                                    _,
+                                    _,
+                                    _,
+                                    _,
+                                    _,
+                                    SynPat.LongIdent (LongIdentWithDots (id, _), _, _, _, _, _),
+                                    _,
+                                    _,
+                                    _,
+                                    _) as binding ],
+                         _) when (id.ToString()) = originalTestName ->
+                        testMethodBinding <- Some binding
                     | _ -> ()
 
                     base.VisitSynModuleDecl(moduleDecl) }
 
         visitor.VisitInput(originalTestTree) |> ignore
-        taskId
+        testMethodBinding
+
+    let private toTestCode (originalTestCode: ISourceText) ((Binding (_, _, _, _, _, _, _, _, _, expr, _, _)): SynBinding) =
+        let range = expr.Range 
+        
+        if range.StartLine = range.EndLine then
+            originalTestCode.GetLineString(range.StartLine - 1).[range.StartColumn - 1..range.EndColumn - 1].Trim()
+        else
+            [ range.StartLine .. range.EndLine ]
+            |> List.map (fun line -> originalTestCode.GetLineString(line - 1).[range.StartColumn..])
+            |> String.concat "\n"
+        
+    let private toTaskId ((Binding (_, _, _, _, attrs, _, _, _, _, _, _, _)): SynBinding) =           
+        attrs
+        |> Seq.collect (fun attrList -> attrList.Attributes)
+        |> Seq.tryPick (fun attr ->
+            match attr.TypeName with
+            | (LongIdentWithDots (id, _)) when (id.ToString()) = "[Task]" ->
+                match attr.ArgExpr with
+                | SynExpr.Paren(SynExpr.Const(SynConst.Int32(i), _), _, _, _) -> Some (int i)
+                | _ -> None
+            | _ -> None)
 
     let private toTestResult originalTestCode originalTestTree (xmlUnitTestResult: XmlUnitTestResult) =
+        let testMethodBinding = findTestMethodBinding originalTestTree xmlUnitTestResult
+        
         { Name = xmlUnitTestResult |> toName
           Status = xmlUnitTestResult |> toStatus
           Message = xmlUnitTestResult |> toMessage
           Output = xmlUnitTestResult |> toOutput
-          TaskId =
-              xmlUnitTestResult
-              |> toTaskId originalTestTree
-          TestCode =
-              xmlUnitTestResult
-              |> toTestCode originalTestCode originalTestTree }
+          TaskId = testMethodBinding |> Option.bind toTaskId
+          TestCode = testMethodBinding |> Option.map (toTestCode originalTestCode) }
 
     let private toTestResults originalTestCode originalTestTree xmlUnitTestResults =
         xmlUnitTestResults
