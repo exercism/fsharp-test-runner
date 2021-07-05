@@ -10,8 +10,9 @@ type TestResult =
       Message: string option
       Output: string option
       TaskId: int option
-      TestCode: string option
-      Status: TestStatus }
+      TestCode: string
+      Status: TestStatus
+      Line: int }
 
 type TestRun =
     { Message: string option

@@ -43,18 +43,10 @@ let private jsonSerializerOptions = JsonSerializerOptions()
 jsonSerializerOptions.IgnoreNullValues <- true
 
 let normalizeTestRunResultJson (json: string) =
-    let jsonTestRun =
-        JsonSerializer.Deserialize<JsonTestRun>(json, jsonSerializerOptions)
-
-    let normalizedJsonTestRun =
-        { jsonTestRun with
-              Tests =
-                  jsonTestRun.Tests
-                  |> Array.sortBy (fun test -> test.Name) }
-
+    let jsonTestRun = JsonSerializer.Deserialize<JsonTestRun>(json, jsonSerializerOptions)
     let normalizeWhitespace (str: string) = str.Replace("\r\n", "\n")
 
-    JsonSerializer.Serialize(normalizedJsonTestRun, jsonSerializerOptions)
+    JsonSerializer.Serialize(jsonTestRun, jsonSerializerOptions)
     |> normalizeWhitespace
 
 let private runTestRunner testSolution =

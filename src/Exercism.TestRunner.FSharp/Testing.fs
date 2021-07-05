@@ -135,7 +135,9 @@ module TestResults =
                     base.VisitSynModuleDecl(moduleDecl) }
 
         visitor.VisitInput(originalTestTree) |> ignore
-        testMethodBinding
+        
+        // Use .Value is safe here as we are guaranteed the test method exists
+        testMethodBinding.Value 
 
     let private toTestCode (originalTestCode: ISourceText) ((Binding (_, _, _, _, _, _, _, _, _, expr, _, _)): SynBinding) =
         let range = expr.Range 
@@ -157,6 +159,8 @@ module TestResults =
                 | SynExpr.Paren(SynExpr.Const(SynConst.Int32(i), _), _, _, _) -> Some (int i)
                 | _ -> None
             | _ -> None)
+        
+    let private toLine ((Binding (_, _, _, _, _, _, _, _, _, _, range, _)): SynBinding) = range.StartLine
 
     let private toTestResult originalTestCode originalTestTree (xmlUnitTestResult: XmlUnitTestResult) =
         let testMethodBinding = findTestMethodBinding originalTestTree xmlUnitTestResult
@@ -165,13 +169,14 @@ module TestResults =
           Status = xmlUnitTestResult |> toStatus
           Message = xmlUnitTestResult |> toMessage
           Output = xmlUnitTestResult |> toOutput
-          TaskId = testMethodBinding |> Option.bind toTaskId
-          TestCode = testMethodBinding |> Option.map (toTestCode originalTestCode) }
+          TaskId = testMethodBinding |> toTaskId
+          TestCode = testMethodBinding |> (toTestCode originalTestCode)
+          Line = testMethodBinding |> toLine }
 
     let private toTestResults originalTestCode originalTestTree xmlUnitTestResults =
         xmlUnitTestResults
         |> Seq.map (toTestResult originalTestCode originalTestTree)
-        |> Seq.sortBy (fun testResult -> testResult.Name)
+        |> Seq.sortBy (fun testResult -> testResult.Line)
         |> Seq.toArray
 
     let parse originalTestCode originalTestTree context =
