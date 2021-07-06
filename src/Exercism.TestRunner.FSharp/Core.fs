@@ -9,8 +9,10 @@ type TestResult =
     { Name: string
       Message: string option
       Output: string option
+      TaskId: int option
       TestCode: string
-      Status: TestStatus }
+      Status: TestStatus
+      Line: int }
 
 type TestRun =
     { Message: string option

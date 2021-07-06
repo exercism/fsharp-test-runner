@@ -1,5 +1,6 @@
 module Exercism.TestRunner.FSharp.Testing
 
+open System
 open System.Diagnostics
 open System.IO
 open System.Xml.Serialization
@@ -102,66 +103,80 @@ module TestResults =
         |> Option.bind (fun output -> output.StdOut |> Option.ofObj)
         |> Option.map String.normalize
         |> Option.map truncate
-
-    let private toTestCode
-        (originalTestCode: ISourceText)
-        (originalTestTree: ParsedInput)
-        (xmlUnitTestResult: XmlUnitTestResult)
-        =
+        
+    let private findTestMethodBinding (originalTestTree: ParsedInput) (xmlUnitTestResult: XmlUnitTestResult) =
         let originalTestName =
             $"[{xmlUnitTestResult.TestName.[xmlUnitTestResult.TestName.IndexOf('.') + 1..]}]"
 
-        let mutable testCode = ""
+        let mutable testMethodBinding = None
 
         let visitor =
             { new SyntaxVisitor() with
                 member this.VisitSynModuleDecl(moduleDecl) =
                     match moduleDecl with
-                    | SynModuleDecl.Let (_,
-                                         [ Binding (_,
-                                                    _,
-                                                    _,
-                                                    _,
-                                                    _,
-                                                    _,
-                                                    _,
-                                                    SynPat.LongIdent (LongIdentWithDots (id, _), _, _, _, _, _),
-                                                    _,
-                                                    expr,
-                                                    _,
-                                                    _) ],
-                                         _) when (id.ToString()) = originalTestName ->
-                        testCode <-
-                            if expr.Range.StartLine = expr.Range.EndLine then
-                                originalTestCode.GetLineString(
-                                    expr.Range.StartLine - 1
-                                ).[expr.Range.StartColumn - 1..expr.Range.EndColumn - 1]
-                                    .Trim()
-                            else
-                                [ expr.Range.StartLine .. expr.Range.EndLine ]
-                                |> List.map
-                                    (fun line -> originalTestCode.GetLineString(line - 1).[expr.Range.StartColumn..])
-                                |> String.concat "\n"
+                    | SynModuleDecl.Let
+                        (_,
+                         [ Binding (_,
+                                    _,
+                                    _,
+                                    _,
+                                    _,
+                                    _,
+                                    _,
+                                    SynPat.LongIdent (LongIdentWithDots (id, _), _, _, _, _, _),
+                                    _,
+                                    _,
+                                    _,
+                                    _) as binding ],
+                         _) when (id.ToString()) = originalTestName ->
+                        testMethodBinding <- Some binding
                     | _ -> ()
 
                     base.VisitSynModuleDecl(moduleDecl) }
 
         visitor.VisitInput(originalTestTree) |> ignore
-        testCode
+        
+        // Use .Value is safe here as we are guaranteed the test method exists
+        testMethodBinding.Value 
+
+    let private toTestCode (originalTestCode: ISourceText) ((Binding (_, _, _, _, _, _, _, _, _, expr, _, _)): SynBinding) =
+        let range = expr.Range 
+        
+        if range.StartLine = range.EndLine then
+            originalTestCode.GetLineString(range.StartLine - 1).[range.StartColumn - 1..range.EndColumn - 1].Trim()
+        else
+            [ range.StartLine .. range.EndLine ]
+            |> List.map (fun line -> originalTestCode.GetLineString(line - 1).[range.StartColumn..])
+            |> String.concat "\n"
+        
+    let private toTaskId ((Binding (_, _, _, _, attrs, _, _, _, _, _, _, _)): SynBinding) =           
+        attrs
+        |> Seq.collect (fun attrList -> attrList.Attributes)
+        |> Seq.tryPick (fun attr ->
+            match attr.TypeName with
+            | (LongIdentWithDots (id, _)) when (id.ToString()) = "[Task]" ->
+                match attr.ArgExpr with
+                | SynExpr.Paren(SynExpr.Const(SynConst.Int32(i), _), _, _, _) -> Some (int i)
+                | _ -> None
+            | _ -> None)
+        
+    let private toLine ((Binding (_, _, _, _, _, _, _, _, _, _, range, _)): SynBinding) = range.StartLine
 
     let private toTestResult originalTestCode originalTestTree (xmlUnitTestResult: XmlUnitTestResult) =
+        let testMethodBinding = findTestMethodBinding originalTestTree xmlUnitTestResult
+        
         { Name = xmlUnitTestResult |> toName
           Status = xmlUnitTestResult |> toStatus
           Message = xmlUnitTestResult |> toMessage
           Output = xmlUnitTestResult |> toOutput
-          TestCode =
-              xmlUnitTestResult
-              |> toTestCode originalTestCode originalTestTree }
+          TaskId = testMethodBinding |> toTaskId
+          TestCode = testMethodBinding |> (toTestCode originalTestCode)
+          Line = testMethodBinding |> toLine }
 
     let private toTestResults originalTestCode originalTestTree xmlUnitTestResults =
         xmlUnitTestResults
         |> Seq.map (toTestResult originalTestCode originalTestTree)
-        |> Seq.sortBy (fun testResult -> testResult.Name)
+        |> Seq.sortBy (fun testResult -> testResult.Line)
         |> Seq.toArray
 
     let parse originalTestCode originalTestTree context =
