@@ -10,17 +10,17 @@ COPY src/Exercism.TestRunner.FSharp/ ./
 RUN dotnet publish -r linux-musl-x64 -c Release -o /opt/test-runner --no-restore -p:PublishReadyToRun=true
 
 # Pre-install packages for offline usage
-RUN dotnet add package Microsoft.NET.Test.Sdk -v 16.8.3 && \
-    dotnet add package xunit -v 2.4.1 && \
-    dotnet add package xunit.runner.visualstudio -v 2.4.3 && \
-    dotnet add package FsUnit.xUnit -v 4.0.4 && \
-    dotnet add package Exercism.Tests -v 0.1.0-alpha --prerelease
+RUN dotnet add package Microsoft.NET.Test.Sdk -v 16.8.3
+RUN dotnet add package xunit -v 2.4.1
+RUN dotnet add package xunit.runner.visualstudio -v 2.4.3
+RUN dotnet add package FsUnit.xUnit -v 4.0.4
+RUN dotnet add package Exercism.Tests -v 0.1.0-alpha
 
 # Build runtime image
 FROM mcr.microsoft.com/dotnet/sdk:5.0.100-alpine3.12-amd64 AS runtime
 WORKDIR /opt/test-runner
 
-COPY --from=build /opt/test-runner/ . 
+COPY --from=build /opt/test-runner/ .
 COPY --from=build /usr/local/bin/ /usr/local/bin/
 COPY --from=build /root/.nuget/packages/ /root/.nuget/packages/
 
