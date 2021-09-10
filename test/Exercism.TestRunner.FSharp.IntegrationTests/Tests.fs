@@ -141,3 +141,7 @@ let ``All tests with task`` () =
 [<Fact>]
 let ``Some tests with task`` () =
     assertSolutionHasExpectedResults "SomeTestsWithTask"
+
+[<Fact>]
+let ``UseCulture attribute`` () =
+    assertSolutionHasExpectedResults "UseCultureAttribute"
