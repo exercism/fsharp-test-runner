@@ -16,6 +16,10 @@ RUN dotnet add package xunit.runner.visualstudio -v 2.4.3
 RUN dotnet add package FsUnit.xUnit -v 4.0.4
 RUN dotnet add package Exercism.Tests -v 0.1.0-alpha
 RUN dotnet add package Exercism.Tests -v 0.1.0-beta1
+RUN dotnet add package Aether -v 8.3.1
+RUN dotnet add package BenchmarkDotNet -v 0.12.1
+RUN dotnet add package FakeItEasy -v 6.2.1
+RUN dotnet add package FsCheck.Xunit -v 2.14.3
 
 # Build runtime image
 FROM mcr.microsoft.com/dotnet/sdk:5.0.100-alpine3.12-amd64 AS runtime
