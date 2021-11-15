@@ -22,7 +22,7 @@
     <PackageReference Include="CommandLineParser" Version="2.8.0" />
     <PackageReference Include="Fantomas" Version="4.5.7" />
     <PackageReference Include="Humanizer.Core" Version="2.11.10" />
-    <PackageReference Include="FsUnit.xUnit" Version="4.0.7" />
+    <PackageReference Include="FsUnit.xUnit" Version="4.1.0" />
   </ItemGroup>
 
 </Project>
