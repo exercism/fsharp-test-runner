@@ -105,8 +105,14 @@ module TestResults =
         |> Option.map truncate
         
     let private findTestMethodBinding (originalTestTree: ParsedInput) (xmlUnitTestResult: XmlUnitTestResult) =
+        // For FsCheck tests, the generated test name includes the generic type of the arguments, which we need to strip
+        let openBracketIndex = xmlUnitTestResult.TestName.LastIndexOf('<')
+        let startIndex = xmlUnitTestResult.TestName.IndexOf('.') + 1
         let originalTestName =
-            $"[{xmlUnitTestResult.TestName.[xmlUnitTestResult.TestName.IndexOf('.') + 1..]}]"
+            if openBracketIndex = -1 then
+                $"[{xmlUnitTestResult.TestName.[startIndex..]}]"
+            else
+                $"[{xmlUnitTestResult.TestName.[startIndex..openBracketIndex - 1]}]"
 
         let mutable testMethodBinding = None
 

@@ -2,6 +2,8 @@ module Exercism.TestRunner.FSharp.IntegrationTests.Tests
 
 open System
 open System.IO
+open System.Threading
+open System.Threading.Tasks
 open Xunit
 open FsUnit.Xunit
 
@@ -145,3 +147,8 @@ let ``Some tests with task`` () =
 [<Fact>]
 let ``UseCulture attribute`` () =
     assertSolutionHasExpectedResults "UseCultureAttribute"
+
+[<Fact>]
+let ``Different types of tests`` () =
+    assertSolutionHasExpectedResults "DifferentTypesOfTests"
+    
