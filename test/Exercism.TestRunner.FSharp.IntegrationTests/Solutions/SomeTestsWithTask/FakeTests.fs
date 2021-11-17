@@ -9,9 +9,9 @@ open Fake
 [<Task(1)>]
 let ``Add should add numbers`` () = add 1 1 |> should equal 2
 
-[<Fact>]
+[<Fact(Skip = "Remove this Skip property to run this test")>]
 let ``Sub should subtract numbers`` () = sub 7 3 |> should equal 4
 
 [<Task(3)>]
-[<Fact>]
+[<Fact(Skip = "Remove this Skip property to run this test")>]
 let ``Mul should multiply numbers`` () = mul 2 3 |> should equal 6
