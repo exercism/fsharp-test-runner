@@ -21,11 +21,12 @@ type EnableAllTests() =
     inherit SyntaxVisitor()
 
     override _.VisitSynAttribute(attr: SynAttribute) : SynAttribute =
-        match attr.TypeName with
-        | LongIdentWithDots ([ ident ], _) when ident.idText = "Fact" ->
-            base.VisitSynAttribute
-                { attr with
-                      ArgExpr = SynExpr.Const(SynConst.Unit, attr.ArgExpr.Range) }
+        match attr.ArgExpr with
+        | SynExpr.Paren(
+            SynExpr.App(_, _,
+                SynExpr.App(_, _, _, SynExpr.Ident(ident), _), _, _), _, _, _) when ident.idText = "Skip" ->
+                base.VisitSynAttribute({ attr with ArgExpr = SynExpr.Const(SynConst.Unit, attr.ArgExpr.Range)})
+            | _ -> base.VisitSynAttribute(attr)
         | _ -> base.VisitSynAttribute(attr)
 
 type CaptureConsoleOutput() =
