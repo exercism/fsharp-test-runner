@@ -21,11 +21,23 @@ type EnableAllTests() =
     inherit SyntaxVisitor()
 
     override _.VisitSynAttribute(attr: SynAttribute) : SynAttribute =
+        let isSkipExpr expr =
+            match expr with
+            | SynExpr.App(_, _,
+                SynExpr.App(_, _, _, SynExpr.Ident(ident), _), _, _) -> ident.idText = "Skip"
+            | _ -> false
+        
         match attr.ArgExpr with
-        | SynExpr.Paren(
-            SynExpr.App(_, _,
-                SynExpr.App(_, _, _, SynExpr.Ident(ident), _), _, _), _, _, _) when ident.idText = "Skip" ->
-                base.VisitSynAttribute({ attr with ArgExpr = SynExpr.Const(SynConst.Unit, attr.ArgExpr.Range)})
+        | SynExpr.Paren(expr, leftParenRange, rightParenRange, range) ->
+            match expr with
+            | SynExpr.App _ when isSkipExpr expr ->
+                let newExpr = SynExpr.Const(SynConst.Unit, attr.ArgExpr.Range) 
+                base.VisitSynAttribute({ attr with ArgExpr = newExpr })
+            | SynExpr.Tuple(iStruct, exprs, commaRanges, tplRange) ->
+                let newExpr =
+                    SynExpr.Paren(
+                        SynExpr.Tuple(iStruct, exprs |> List.filter (isSkipExpr >> not), commaRanges, tplRange), leftParenRange, rightParenRange, range)                
+                base.VisitSynAttribute({ attr with ArgExpr = newExpr })
             | _ -> base.VisitSynAttribute(attr)
         | _ -> base.VisitSynAttribute(attr)
 

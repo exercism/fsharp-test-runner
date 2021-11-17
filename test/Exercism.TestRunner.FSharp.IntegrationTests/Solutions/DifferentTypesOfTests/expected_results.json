@@ -1,6 +1,6 @@
 {
   "version": 3,
-  "status": "pass",
+  "status": "fail",
   "tests": [
     {
       "name": "FakeTests.Add should add numbers",
@@ -11,6 +11,12 @@
       "name": "FakeTests.Add should add more numbers",
       "status": "pass",
       "test_code": "add 2 3 |\u003E should equal 5"
+    },
+    {
+      "name": "FakeTests.Add should add more numbers with timeout",
+      "status": "fail",
+      "message": "Test execution timed out after 20 milliseconds",
+      "test_code": "Task.Delay(TimeSpan.FromMilliseconds(100.0))"
     },
     {
       "name": "FakeTests.Sub should subtract numbers\u003CInt32\u003E(expected: 4, x: 7, y: 3)",
