@@ -30,6 +30,6 @@ COPY --from=build /usr/local/bin/ /usr/local/bin/
 COPY --from=build /root/.nuget/packages/ /root/.nuget/packages/
 
 COPY run.sh /opt/test-runner/bin/
-COPY global.json /
+COPY Directory.Build.props /
 
 ENTRYPOINT ["sh", "/opt/test-runner/bin/run.sh"]
