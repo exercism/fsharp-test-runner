@@ -151,4 +151,8 @@ let ``UseCulture attribute`` () =
 [<Fact>]
 let ``Different types of tests`` () =
     assertSolutionHasExpectedResults "DifferentTypesOfTests"
+
+[<Fact>]
+let ``.NET 5 project`` () =
+    assertSolutionHasExpectedResults "DotnetFiveProject"
     
