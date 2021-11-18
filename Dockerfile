@@ -1,4 +1,4 @@
-FROM mcr.microsoft.com/dotnet/sdk:6.0-alpine3.13-amd64 AS build
+FROM mcr.microsoft.com/dotnet/sdk:6.0.100-alpine3.14-amd64 AS build
 WORKDIR /app
 
 # Copy fsproj and restore as distinct layers
@@ -22,7 +22,7 @@ RUN dotnet add package FakeItEasy -v 6.2.1
 RUN dotnet add package FsCheck.Xunit -v 2.14.3
 
 # Build runtime image
-FROM mcr.microsoft.com/dotnet/sdk:6.0-alpine3.13-amd64 AS runtime
+FROM mcr.microsoft.com/dotnet/sdk:6.0.100-alpine3.14-amd64 AS runtime
 WORKDIR /opt/test-runner
 
 COPY --from=build /opt/test-runner/ .
