@@ -42,7 +42,7 @@ type JsonTestRun =
       Tests: JsonTestResult [] }
 
 let private jsonSerializerOptions = JsonSerializerOptions()
-jsonSerializerOptions.IgnoreNullValues <- true
+jsonSerializerOptions.DefaultIgnoreCondition <- JsonIgnoreCondition.WhenWritingNull
 
 let normalizeTestRunResultJson (json: string) =
     let jsonTestRun = JsonSerializer.Deserialize<JsonTestRun>(json, jsonSerializerOptions)
