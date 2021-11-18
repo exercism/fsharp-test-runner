@@ -23,8 +23,7 @@ type EnableAllTests() =
     override _.VisitSynAttribute(attr: SynAttribute) : SynAttribute =
         let isSkipExpr expr =
             match expr with
-            | SynExpr.App(_, _,
-                SynExpr.App(_, _, _, SynExpr.Ident(ident), _), _, _) -> ident.idText = "Skip"
+            | SynExpr.App(_, _, SynExpr.App(_, _, _, SynExpr.Ident(ident), _), _, _) -> ident.idText = "Skip"
             | _ -> false
         
         match attr.ArgExpr with

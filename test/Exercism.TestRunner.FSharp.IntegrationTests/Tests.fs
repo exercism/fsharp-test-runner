@@ -42,7 +42,7 @@ type JsonTestRun =
       Tests: JsonTestResult [] }
 
 let private jsonSerializerOptions = JsonSerializerOptions()
-jsonSerializerOptions.IgnoreNullValues <- true
+jsonSerializerOptions.DefaultIgnoreCondition <- JsonIgnoreCondition.WhenWritingNull
 
 let normalizeTestRunResultJson (json: string) =
     let jsonTestRun = JsonSerializer.Deserialize<JsonTestRun>(json, jsonSerializerOptions)
@@ -151,4 +151,8 @@ let ``UseCulture attribute`` () =
 [<Fact>]
 let ``Different types of tests`` () =
     assertSolutionHasExpectedResults "DifferentTypesOfTests"
+
+[<Fact>]
+let ``.NET 5 project`` () =
+    assertSolutionHasExpectedResults "DotnetFiveProject"
     

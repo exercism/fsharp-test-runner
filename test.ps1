@@ -62,6 +62,6 @@ if ($UseDocker.IsPresent) {
 
 $Env:USE_DOCKER = $UseDocker.IsPresent
 
-dotnet test
+dotnet test test/Exercism.TestRunner.FSharp.IntegrationTests
 
 exit $LastExitCode
