@@ -13,8 +13,6 @@ type JsonTestResult =
       Status: string
       [<JsonPropertyName("message")>]
       Message: string
-      [<JsonPropertyName("output")>]
-      Output: string
       [<JsonPropertyName("test_code")>]
       TestCode: string
       [<JsonPropertyName("task_id")>]
@@ -43,7 +41,6 @@ let private toJsonTestStatus (testStatus: TestStatus) =
 let private toJsonTestResult (testResult: TestResult) =
     { Name = testResult.Name
       Message = testResult.Message |> Option.toObj
-      Output = testResult.Output |> Option.toObj
       TestCode = testResult.TestCode
       TaskId = testResult.TaskId |> Option.toNullable
       Status = toJsonTestStatus testResult.Status }

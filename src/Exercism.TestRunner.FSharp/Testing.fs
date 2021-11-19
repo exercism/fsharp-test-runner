@@ -174,7 +174,6 @@ module TestResults =
         { Name = xmlUnitTestResult |> toName
           Status = xmlUnitTestResult |> toStatus
           Message = xmlUnitTestResult |> toMessage
-          Output = xmlUnitTestResult |> toOutput
           TaskId = testMethodBinding |> toTaskId
           TestCode = testMethodBinding |> (toTestCode originalTestCode)
           Line = testMethodBinding |> toLine }

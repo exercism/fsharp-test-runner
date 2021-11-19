@@ -125,14 +125,6 @@ let ``Quoted and non-quoted tests`` () =
     assertSolutionHasExpectedResults "QuotedAndNonQuotedTests"
 
 [<Fact>]
-let ``Multiple tests with test ouput`` () =
-    assertSolutionHasExpectedResults "MultipleTestsWithTestOutput"
-
-[<Fact>]
-let ``Multiple tests with test ouput exceeding limit`` () =
-    assertSolutionHasExpectedResults "MultipleTestsWithTestOutputExceedingLimit"
-
-[<Fact>]
 let ``Different test code formats`` () =
     assertSolutionHasExpectedResults "DifferentTestCodeFormats"
 
