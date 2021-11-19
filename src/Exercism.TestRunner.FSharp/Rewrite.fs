@@ -24,6 +24,8 @@ type EnableAllTests() =
             match expr with
             | SynExpr.App(_, _, SynExpr.App(_, _, _, SynExpr.Ident(ident), _), _, _) -> ident.idText = "Skip"
             | _ -> false
+
+        // TODO: remove Ignore attribute
         
         match attr.ArgExpr with
         | SynExpr.Paren(expr, leftParenRange, rightParenRange, range) ->

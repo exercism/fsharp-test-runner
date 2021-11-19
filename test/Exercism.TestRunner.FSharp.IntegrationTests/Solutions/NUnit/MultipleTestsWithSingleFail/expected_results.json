@@ -1,6 +1,6 @@
 {
   "version": 3,
-  "status": "pass",
+  "status": "fail",
   "tests": [
     {
       "name": "FakeTests.Add should add numbers",
@@ -10,12 +10,13 @@
     {
       "name": "FakeTests.Sub should subtract numbers",
       "status": "pass",
-      "test_code": "sub 7 3 |\u003E should equal 4"
+      "test_code": "sub 2 1 |\u003E should equal 1"
     },
     {
       "name": "FakeTests.Mul should multiply numbers",
-      "status": "pass",
-      "test_code": "mul 2 3 |\u003E should equal 6"
+      "status": "fail",
+      "message": "Expected: Equals 5\nActual:   6",
+      "test_code": "mul 2 3 |\u003E should equal 5"
     }
   ]
 }

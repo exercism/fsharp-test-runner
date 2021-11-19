@@ -1,15 +1,18 @@
 {
   "version": 3,
-  "status": "pass",
+  "status": "fail",
   "tests": [
     {
       "name": "FakeTests.Add should add numbers",
       "status": "pass",
+      "output": "Printf andprintfn output",
       "test_code": "add 1 1 |\u003E should equal 2"
     },
     {
       "name": "FakeTests.Sub should subtract numbers",
-      "status": "pass",
+      "status": "fail",
+      "message": "Expected: Equals 4\nActual:   22",
+      "output": "Output\nfrom\nmultiple\nsources",
       "test_code": "sub 7 3 |\u003E should equal 4"
     },
     {
