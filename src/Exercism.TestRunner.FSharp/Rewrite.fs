@@ -20,10 +20,11 @@ type EnableAllTests() =
     inherit SyntaxVisitor()
     
     default this.VisitSynAttributeList(attrs: SynAttributeList) : SynAttributeList =
-        { attrs with
-              Attributes =
+        base.VisitSynAttributeList(
+            { attrs with
+                Attributes =
                   attrs.Attributes
-                  |> List.filter (fun attr -> attr.TypeName.Lid.Head.idText <> "Ignore") }
+                  |> List.filter (fun attr -> attr.TypeName.Lid.Head.idText <> "Ignore") })
 
     override _.VisitSynAttribute(attr: SynAttribute) : SynAttribute =
         let isSkipExpr expr =

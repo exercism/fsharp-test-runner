@@ -3,20 +3,20 @@
   "status": "fail",
   "tests": [
     {
-      "name": "FakeTests.Add should add numbers",
+      "name": "Add should add numbers",
       "status": "pass",
       "output": "Printf andprintfn output",
       "test_code": "add 1 1 |\u003E should equal 2"
     },
     {
-      "name": "FakeTests.Sub should subtract numbers",
+      "name": "Sub should subtract numbers",
       "status": "fail",
       "message": "Expected: Equals 4\nActual:   22",
       "output": "Output\nfrom\nmultiple\nsources",
       "test_code": "sub 7 3 |\u003E should equal 4"
     },
     {
-      "name": "FakeTests.Mul should multiply numbers",
+      "name": "Mul should multiply numbers",
       "status": "pass",
       "test_code": "mul 2 3 |\u003E should equal 6"
     }

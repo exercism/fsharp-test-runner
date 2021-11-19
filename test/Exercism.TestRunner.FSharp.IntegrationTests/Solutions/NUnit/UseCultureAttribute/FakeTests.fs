@@ -6,15 +6,15 @@ open Exercism.Tests
 open Fake
 
 [<Test>]
-[<UseCulture>]
+[<SetCulture>]
 let ``Use invariant culture`` () = format 1000 |> should equal "¤1,000.00"
 
 [<Test>]
 [<Ignore("Remove this Attribute to run this test")>]
-[<UseCulture("nl-NL")>]
+[<SetCulture("nl-NL")>]
 let ``Use Dutch culture`` () = format 1000 |> should equal "€ 1.000,00"
 
 [<Test>]
 [<Ignore("Remove this Attribute to run this test")>]
-[<UseCulture("en-US")>]
+[<SetCulture("en-US")>]
 let ``Use US culture`` () = format 1000 |> should equal "$1,000.00"
