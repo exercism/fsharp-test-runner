@@ -9,3 +9,4 @@ src/Exercism.TestRunner.FSharp/obj
 .git
 .github
 .gitignore
+.gitattributes
