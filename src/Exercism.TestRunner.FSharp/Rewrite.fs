@@ -18,14 +18,18 @@ type RewriteResult =
 
 type EnableAllTests() =
     inherit SyntaxVisitor()
+    
+    default this.VisitSynAttributeList(attrs: SynAttributeList) : SynAttributeList =
+        { attrs with
+              Attributes =
+                  attrs.Attributes
+                  |> List.filter (fun attr -> attr.TypeName.Lid.Head.idText <> "Ignore") }
 
     override _.VisitSynAttribute(attr: SynAttribute) : SynAttribute =
         let isSkipExpr expr =
             match expr with
             | SynExpr.App(_, _, SynExpr.App(_, _, _, SynExpr.Ident(ident), _), _, _) -> ident.idText = "Skip"
             | _ -> false
-
-        // TODO: remove Ignore attribute
         
         match attr.ArgExpr with
         | SynExpr.Paren(expr, leftParenRange, rightParenRange, range) ->
