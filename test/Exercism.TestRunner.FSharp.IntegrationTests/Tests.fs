@@ -148,3 +148,7 @@ let ``Different types of tests`` () =
 let ``.NET 5 project`` () =
     assertSolutionHasExpectedResults "DotnetFiveProject"
     
+[<Fact>]
+let ``Class-based tests`` () =
+    assertSolutionHasExpectedResults "ClassBasedTests"
+    

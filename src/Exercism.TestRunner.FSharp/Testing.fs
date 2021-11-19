@@ -109,10 +109,8 @@ module TestResults =
         let openBracketIndex = xmlUnitTestResult.TestName.LastIndexOf('<')
         let startIndex = xmlUnitTestResult.TestName.IndexOf('.') + 1
         let originalTestName =
-            if openBracketIndex = -1 then
-                $"[{xmlUnitTestResult.TestName.[startIndex..]}]"
-            else
-                $"[{xmlUnitTestResult.TestName.[startIndex..openBracketIndex - 1]}]"
+            if openBracketIndex = -1 then xmlUnitTestResult.TestName.[startIndex..]
+            else xmlUnitTestResult.TestName.[startIndex..openBracketIndex - 1]
 
         let mutable testMethodBinding = None
 
@@ -122,7 +120,7 @@ module TestResults =
                     match moduleDecl with
                     | SynModuleDecl.Let
                         (_,
-                         [ Binding (_,
+                         [ SynBinding.Binding (_,
                                     _,
                                     _,
                                     _,
@@ -134,11 +132,32 @@ module TestResults =
                                     _,
                                     _,
                                     _) as binding ],
-                         _) when (id.ToString()) = originalTestName ->
+                         _) when id.[0].idText = originalTestName ->
                         testMethodBinding <- Some binding
                     | _ -> ()
 
-                    base.VisitSynModuleDecl(moduleDecl) }
+                    base.VisitSynModuleDecl(moduleDecl)
+
+                member this.VisitSynMemberDefn(memberDefn) =
+                    match memberDefn with
+                    | SynMemberDefn.Member
+                        ( SynBinding.Binding (_,
+                                              _,
+                                              _,
+                                              _,
+                                              _,
+                                              _,
+                                              _,
+                                              SynPat.LongIdent (LongIdentWithDots (id, _), _, _, _, _, _),
+                                              _,
+                                              _,
+                                              _,
+                                              _) as binding,
+                                              _) when id.[1].idText = originalTestName ->
+                        testMethodBinding <- Some binding
+                    | _ -> ()
+
+                    base.VisitSynMemberDefn(memberDefn) }
 
         visitor.VisitInput(originalTestTree) |> ignore
         
