@@ -1,11 +1,10 @@
 module FakeTests
 
 open System
-open System.Threading.Tasks
 open NUnit.Framework
 open FsUnit
 open FsCheck
-open FsCheck.Xunit
+open FsCheck.NUnit
 open Exercism.Tests
 open Fake
 
@@ -30,9 +29,11 @@ let ``Add should add more numbers with expected`` () =
 [<Ignore("Remove this Attribute to run this test")>]
 let ``Sub should subtract numbers`` (expected, x, y) = sub x y |> should equal expected
 
-[<CustomPropertyAttribute(Skip = "Remove this Attribute to run this test")>]
+[<CustomPropertyAttribute>]
+[<Ignore("Remove this Attribute to run this test")>]
 let ``Mul should multiply numbers`` (x, y) = mul x y |> should equal (x * y)
 
-[<Property(Skip = "Remove this Attribute to run this test")>]
+[<Property>]
+[<Ignore("Remove this Attribute to run this test")>]
 let ``Div should divide numbers`` (x) : Property =
     Prop.throws<DivideByZeroException, int> (new Lazy<int>(fun () -> x / 0))
