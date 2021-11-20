@@ -42,9 +42,9 @@ function Move-Generated-Test-Results-To-Expected ([string] $SolutionsDir) {
 function Update-Expected {
     $solutionsDir = Join-Path "test" (Join-Path "Exercism.TestRunner.FSharp.IntegrationTests" "Solutions")
 
-    Get-ChildItem $solutionsDir -Directory | ForEach-Object { 
-        Run-Test-Runner $_.FullName
-        Move-Generated-Test-Results-To-Expected $_.FullName
+    Get-ChildItem $solutionsDir -Recurse -Filter '*.fsproj' | Foreach-Object {
+        Run-Test-Runner $_.Directory.FullName
+        Move-Generated-Test-Results-To-Expected $_.Directory.FullName
     }
 }
 

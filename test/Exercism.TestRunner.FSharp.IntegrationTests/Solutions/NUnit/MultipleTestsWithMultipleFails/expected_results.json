@@ -5,7 +5,7 @@
     {
       "name": "Add should add numbers",
       "status": "fail",
-      "message": "Expected: Equals 3\nActual:   2",
+      "message": "Expected: 3\n  But was:  2",
       "test_code": "add 1 1 |\u003E should equal 3"
     },
     {
@@ -16,7 +16,7 @@
     {
       "name": "Mul should multiply numbers",
       "status": "fail",
-      "message": "Expected: Equals 7\nActual:   6",
+      "message": "Expected: 7\n  But was:  6",
       "test_code": "mul 2 3 |\u003E should equal 7"
     }
   ]

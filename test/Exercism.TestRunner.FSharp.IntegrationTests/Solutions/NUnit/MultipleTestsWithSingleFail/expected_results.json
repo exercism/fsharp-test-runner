@@ -15,7 +15,7 @@
     {
       "name": "Mul should multiply numbers",
       "status": "fail",
-      "message": "Expected: Equals 5\nActual:   6",
+      "message": "Expected: 5\n  But was:  6",
       "test_code": "mul 2 3 |\u003E should equal 5"
     }
   ]

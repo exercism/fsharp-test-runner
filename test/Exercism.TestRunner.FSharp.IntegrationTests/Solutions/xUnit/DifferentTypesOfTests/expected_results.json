@@ -26,11 +26,13 @@
     {
       "name": "FakeTests.Mul should multiply numbers",
       "status": "pass",
+      "output": "Ok, passed 100 tests.",
       "test_code": "mul x y |\u003E should equal (x * y)"
     },
     {
       "name": "FakeTests.Div should divide numbers",
       "status": "pass",
+      "output": "Ok, passed 100 tests.",
       "test_code": "Prop.throws\u003CDivideByZeroException, int\u003E (new Lazy\u003Cint\u003E(fun () -\u003E x / 0))"
     }
   ]

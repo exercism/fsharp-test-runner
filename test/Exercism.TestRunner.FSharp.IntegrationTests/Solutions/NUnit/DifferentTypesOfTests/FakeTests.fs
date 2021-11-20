@@ -19,12 +19,15 @@ let ``Add should add numbers`` () = add 1 1 |> should equal 2
 [<Ignore("Remove this Attribute to run this test")>]
 let ``Add should add more numbers`` () = add 2 3 |> should equal 5
 
-[<Fact(Timeout = 20, Skip = "Remove this Attribute to run this test")>]
-let ``Add should add more numbers with timeout`` (): Task =
-    Task.Delay(TimeSpan.FromMilliseconds(100.0))
+[<Test(ExpectedResult = 5)>]
+[<Ignore("Remove this Attribute to run this test")>]
+let ``Add should add more numbers with expected`` () =
+    add 2 3
 
-[<Theory(Skip = "Remove this Attribute to run this test")>]
-[<InlineData(4, 7, 3)>]
+[<TestCase(4)>]
+[<TestCase(7)>]
+[<TestCase(3)>]
+[<Ignore("Remove this Attribute to run this test")>]
 let ``Sub should subtract numbers`` (expected, x, y) = sub x y |> should equal expected
 
 [<CustomPropertyAttribute(Skip = "Remove this Attribute to run this test")>]
