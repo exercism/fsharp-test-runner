@@ -156,6 +156,9 @@ let ``Class-based tests`` () =
 module NUnit =    
     let private assertSolutionHasExpectedResults (directory: string) =
         assertSolutionHasExpectedResults (Path.Combine("NUnit", directory))
+        
+    let private assertSolutionHasExpectedResultsWithSlug (directory: string) (slug: string) =
+        assertSolutionHasExpectedResultsWithSlug (Path.Combine("NUnit", directory)) slug
 
     [<Fact>]
     let ``Single compile error`` () =
@@ -236,6 +239,9 @@ module NUnit =
 module xUnit =    
     let private assertSolutionHasExpectedResults (directory: string) =
         assertSolutionHasExpectedResults (Path.Combine("xUnit", directory))
+        
+    let private assertSolutionHasExpectedResultsWithSlug (directory: string) (slug: string) =
+        assertSolutionHasExpectedResultsWithSlug (Path.Combine("xUnit", directory)) slug
 
     [<Fact>]
     let ``Single compile error`` () =
