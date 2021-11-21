@@ -23,6 +23,7 @@ RUN dotnet add package Aether -v 8.3.1
 RUN dotnet add package BenchmarkDotNet -v 0.12.1
 RUN dotnet add package FakeItEasy -v 6.2.1
 RUN dotnet add package FsCheck.Xunit -v 2.14.3
+RUN dotnet add package FsCheck.NUnit -v 2.14.3
 
 # Build runtime image
 FROM mcr.microsoft.com/dotnet/sdk:6.0.100-alpine3.14-amd64 AS runtime

@@ -1,6 +1,6 @@
 {
   "version": 3,
-  "status": "pass",
+  "status": "fail",
   "tests": [
     {
       "name": "FakeTests.Add should add numbers",
@@ -9,12 +9,8 @@
     },
     {
       "name": "FakeTests.Sub should subtract numbers",
-<<<<<<< HEAD
-      "status": "pass",
-=======
       "status": "fail",
       "message": "Expected: Equals 4\nActual:   22",
->>>>>>> cc4449e (Create NUnit tests)
       "test_code": "sub 7 3 |\u003E should equal 4"
     },
     {
