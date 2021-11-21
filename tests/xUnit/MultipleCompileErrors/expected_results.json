@@ -1,6 +1,6 @@
 {
   "version": 3,
   "status": "error",
-  "message": "FakeTests.fs(9,37): error FS0039: The value or constructor \u0027add\u0027 is not defined.\nFakeTests.fs(12,37): error FS0039: The value or constructor \u0027sub\u0027 is not defined. Maybe you want one of the following:\u001D   subsetOf",
+  "message": "MultipleCompileErrorsTests.fs(9,37): error FS0039: The value or constructor \u0027add\u0027 is not defined.\nMultipleCompileErrorsTests.fs(12,37): error FS0039: The value or constructor \u0027sub\u0027 is not defined. Maybe you want one of the following:\u001D   subsetOf",
   "tests": []
 }

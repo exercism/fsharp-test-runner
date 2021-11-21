@@ -1,6 +1,6 @@
 {
   "version": 3,
   "status": "error",
-  "message": "FakeTests.fs(9,37): error FS0039: The value or constructor \u0027add\u0027 is not defined.",
+  "message": "SingleCompileErrorTests.fs(9,37): error FS0039: The value or constructor \u0027add\u0027 is not defined.",
   "tests": []
 }

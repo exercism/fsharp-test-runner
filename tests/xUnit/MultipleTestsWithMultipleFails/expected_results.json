@@ -3,18 +3,18 @@
   "status": "fail",
   "tests": [
     {
-      "name": "FakeTests.Add should add numbers",
+      "name": "MultipleTestsWithMultipleFailsTests.Add should add numbers",
       "status": "fail",
       "message": "Expected: Equals 3\nActual:   2",
       "test_code": "add 1 1 |\u003E should equal 3"
     },
     {
-      "name": "FakeTests.Sub should subtract numbers",
+      "name": "MultipleTestsWithMultipleFailsTests.Sub should subtract numbers",
       "status": "pass",
       "test_code": "sub 2 1 |\u003E should equal 1"
     },
     {
-      "name": "FakeTests.Mul should multiply numbers",
+      "name": "MultipleTestsWithMultipleFailsTests.Mul should multiply numbers",
       "status": "fail",
       "message": "Expected: Equals 7\nActual:   6",
       "test_code": "mul 2 3 |\u003E should equal 7"
