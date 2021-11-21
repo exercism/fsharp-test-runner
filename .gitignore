@@ -38,4 +38,4 @@ global.json
 
 TestResults/
 
-!bin/run.sh
+!/bin/
