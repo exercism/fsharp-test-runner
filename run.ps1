@@ -18,10 +18,10 @@
 param (
     [Parameter(Position = 0, Mandatory = $true)]
     [string]$Exercise,
-    
+
     [Parameter(Position = 1, Mandatory = $true)]
     [string]$InputDirectory,
-    
+
     [Parameter(Position = 2, Mandatory = $true)]
     [string]$OutputDirectory
 )
