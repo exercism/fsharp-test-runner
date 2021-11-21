@@ -1,5 +1,6 @@
 *
 !bin/run.sh
+!bin/run-tests.sh
 !Directory.Build.props
 !src/Exercism.TestRunner.FSharp
 src/Exercism.TestRunner.FSharp/bin
