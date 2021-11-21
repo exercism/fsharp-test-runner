@@ -1,6 +1,38 @@
 {
   "version": 3,
-  "status": "error",
-  "message": "FakeTests.fs(22,3): error FS0039: The type \u0027Fact\u0027 is not defined.\nFakeTests.fs(27,3): error FS0039: The type \u0027InlineData\u0027 is not defined. Maybe you want one of the following:\u001D   InlineIfLambda",
-  "tests": []
+  "status": "pass",
+  "tests": [
+    {
+      "name": "Add should add numbers",
+      "status": "pass",
+      "test_code": "add 1 1 |\u003E should equal 2"
+    },
+    {
+      "name": "Add should add more numbers",
+      "status": "pass",
+      "test_code": "add 2 3 |\u003E should equal 5"
+    },
+    {
+      "name": "Add should add more numbers with expected()",
+      "status": "pass",
+      "test_code": "add 2 3"
+    },
+    {
+      "name": "Sub should subtract numbers\u003CInt32\u003E(4,7,3)",
+      "status": "pass",
+      "test_code": "sub x y |\u003E should equal expected"
+    },
+    {
+      "name": "Mul should multiply numbers",
+      "status": "pass",
+      "output": "Ok, passed 100 tests.",
+      "test_code": "mul x y |\u003E should equal (x * y)"
+    },
+    {
+      "name": "Div should divide numbers",
+      "status": "pass",
+      "output": "Ok, passed 100 tests.",
+      "test_code": "Prop.throws\u003CDivideByZeroException, int\u003E (new Lazy\u003Cint\u003E(fun () -\u003E x / 0))"
+    }
+  ]
 }

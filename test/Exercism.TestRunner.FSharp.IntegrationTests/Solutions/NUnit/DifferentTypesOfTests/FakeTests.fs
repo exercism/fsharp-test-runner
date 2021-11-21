@@ -15,25 +15,17 @@ type CustomPropertyAttribute() =
 let ``Add should add numbers`` () = add 1 1 |> should equal 2
 
 [<Test>]
-[<Ignore("Remove this Attribute to run this test")>]
 let ``Add should add more numbers`` () = add 2 3 |> should equal 5
 
 [<Test(ExpectedResult = 5)>]
-[<Ignore("Remove this Attribute to run this test")>]
-let ``Add should add more numbers with expected`` () =
-    add 2 3
+let ``Add should add more numbers with expected`` () = add 2 3
 
-[<TestCase(4)>]
-[<TestCase(7)>]
-[<TestCase(3)>]
-[<Ignore("Remove this Attribute to run this test")>]
+[<TestCase(4, 7, 3)>]
 let ``Sub should subtract numbers`` (expected, x, y) = sub x y |> should equal expected
 
 [<CustomPropertyAttribute>]
-[<Ignore("Remove this Attribute to run this test")>]
 let ``Mul should multiply numbers`` (x, y) = mul x y |> should equal (x * y)
 
 [<Property>]
-[<Ignore("Remove this Attribute to run this test")>]
 let ``Div should divide numbers`` (x) : Property =
     Prop.throws<DivideByZeroException, int> (new Lazy<int>(fun () -> x / 0))
