@@ -29,6 +29,7 @@ param (
 )
 
 docker build -t exercism/fsharp-test-runner .
+
 docker run `
   --network none `
   --read-only `
