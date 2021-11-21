@@ -21,7 +21,7 @@ if [ "$#" -lt 3 ]; then
     exit 1
 fi
 
-if [ -d /opt/test-runner/Exercism.TestRunner.FSharp ]; then
+if [ -f /opt/test-runner/Exercism.TestRunner.FSharp ]; then
     /opt/test-runner/Exercism.TestRunner.FSharp $1 $2 $3
 else
     dotnet run --project ./src/Exercism.TestRunner.FSharp/ $1 $2 $3
