@@ -252,12 +252,10 @@ module DotnetCli =
         TestResults.parse originalTestCode originalTestTree context
 
     let runTests originalTestCode originalTestTree context =
-        let command = "dotnet"
+        let solutionDir = Path.GetDirectoryName(context.TestsFile)
 
-        let arguments =
-            $"test --verbosity=quiet --logger \"trx;LogFileName=%s{Path.GetFileName(context.TestResultsFile)}\" /flp:v=q"
-
-        Process.exec command arguments (Path.GetDirectoryName(context.TestsFile))
+        Process.exec "dotnet" "restore" solutionDir
+        Process.exec "dotnet" $"test --no-restore --verbosity=quiet --logger \"trx;LogFileName=%s{Path.GetFileName(context.TestResultsFile)}\" /flp:v=q" solutionDir
 
         let buildErrors = parseBuildErrors context
 
