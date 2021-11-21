@@ -1,15 +1,9 @@
 FROM mcr.microsoft.com/dotnet/sdk:6.0.100-alpine3.14-amd64 AS build
-WORKDIR /app
 
-# Copy fsproj and restore as distinct layers
-COPY src/Exercism.TestRunner.FSharp/Exercism.TestRunner.FSharp.fsproj ./
-RUN dotnet restore -r linux-musl-x64
-
-# Copy everything else and build
-COPY src/Exercism.TestRunner.FSharp/ ./
-RUN dotnet publish -r linux-musl-x64 -c Release -o /opt/test-runner --no-restore --self-contained true
+WORKDIR /tmp
 
 # Pre-install packages for offline usage
+RUN dotnet new console
 RUN dotnet add package Microsoft.NET.Test.Sdk -v 16.8.3
 RUN dotnet add package xunit -v 2.4.1
 RUN dotnet add package xunit.runner.visualstudio -v 2.4.3
@@ -24,6 +18,16 @@ RUN dotnet add package BenchmarkDotNet -v 0.12.1
 RUN dotnet add package FakeItEasy -v 6.2.1
 RUN dotnet add package FsCheck.Xunit -v 2.14.3
 RUN dotnet add package FsCheck.NUnit -v 2.14.3
+
+WORKDIR /app
+
+# Copy fsproj and restore as distinct layers
+COPY src/Exercism.TestRunner.FSharp/Exercism.TestRunner.FSharp.fsproj ./
+RUN dotnet restore -r linux-musl-x64
+
+# Copy everything else and build
+COPY src/Exercism.TestRunner.FSharp/ ./
+RUN dotnet publish -r linux-musl-x64 -c Release -o /opt/test-runner --no-restore --self-contained true
 
 # Build runtime image
 FROM mcr.microsoft.com/dotnet/sdk:6.0.100-alpine3.14-amd64 AS runtime
