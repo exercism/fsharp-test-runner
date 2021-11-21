@@ -24,5 +24,5 @@ fi
 if [ -d /opt/test-runner/Exercism.TestRunner.FSharp ]; then
     /opt/test-runner/Exercism.TestRunner.FSharp $1 $2 $3
 else
-    dotnet run --project ./src/Exercism.TestRunner.FSharp/
+    dotnet run --project ./src/Exercism.TestRunner.FSharp/ $1 $2 $3
 fi
