@@ -36,4 +36,6 @@ msbuild.log
 # SDK files
 global.json
 
+TestResults/
+
 !bin/run.sh
