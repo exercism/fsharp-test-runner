@@ -13,7 +13,7 @@
 # ./bin/run-tests-in-docker.sh
 
 # Build the Docker image
-docker build -t exercism/fsharp-test-runner:latest .
+docker build --rm -t exercism/fsharp-test-runner .
 
 # Run the Docker image using the settings mimicking the production environment
 docker run \
@@ -24,4 +24,4 @@ docker run \
     --mount type=tmpfs,dst=/tmp \
     --workdir /opt/test-runner \
     --entrypoint /opt/test-runner/bin/run-tests.sh \
-    exercism/fsharp-test-runner:latest
+    exercism/fsharp-test-runner
