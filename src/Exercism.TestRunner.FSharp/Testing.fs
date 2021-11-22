@@ -25,6 +25,7 @@ module Process =
         psi.RedirectStandardOutput <- true
         use p = Process.Start(psi)
         p.WaitForExit()
+        p.StandardOutput.ReadToEnd() + "\n" + p.StandardError.ReadToEnd()
 
 module TestResults =
     [<AllowNullLiteral>]
@@ -254,8 +255,8 @@ module DotnetCli =
     let runTests originalTestCode originalTestTree context =
         let solutionDir = Path.GetDirectoryName(context.TestsFile)
 
-        Process.exec "dotnet" "restore" solutionDir
-        Process.exec "dotnet" $"test --no-restore --verbosity=quiet --logger \"trx;LogFileName=%s{Path.GetFileName(context.TestResultsFile)}\" /flp:v=q" solutionDir
+        printfn "%s" (Process.exec "dotnet" "restore" solutionDir)
+        printfn "%s" (Process.exec "dotnet" $"test --no-restore --verbosity=quiet --logger \"trx;LogFileName=%s{Path.GetFileName(context.TestResultsFile)}\" /flp:v=q" solutionDir)
 
         let buildErrors = parseBuildErrors context
 
