@@ -16,10 +16,5 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@ec3a7ce113134d7a93b817d10a8272cb61118579
 
-      - name: Setup buildx
-        uses: docker/setup-buildx-action@v1
-        with:
-          install: true
-
       - name: Run Tests in Docker
         run: bin/run-tests-in-docker.sh
