@@ -13,7 +13,7 @@ type ParseResult =
     | ParseError
 
 type RewriteResult =
-    | RewriteSuccess of OriginalCode: ISourceText * OriginalTestTree: ParsedInput * RewrittenCode: ISourceText
+    | RewriteSuccess of OriginalCode: ISourceText * OriginalTestTree: ParsedInput * RewrittenCode: ISourceText * OriginalProjectFile: string * RewrittenProjectFile: string
     | RewriteError
 
 type EnableAllTests() =
@@ -76,10 +76,15 @@ let private toCode tree =
 
 let private enableAllTests parsedInput =
     EnableAllTests().VisitInput(parsedInput)
+    
+let private rewriteProjectFile (context: TestRunContext) =
+    let originalProjectFile = File.ReadAllText(context.ProjectFile)
+    originalProjectFile, originalProjectFile.Replace("net5.0", "net6.0")
 
 let rewriteTests (context: TestRunContext) =
     match parseFile context.TestsFile with
     | ParseSuccess (originalTestCode, originalTestTree) ->
         let rewrittenTestCode = originalTestTree |> enableAllTests |> toCode
-        RewriteSuccess(originalTestCode, originalTestTree, rewrittenTestCode)
+        let (originalProjectFile, rewrittenProjectFile) = rewriteProjectFile context
+        RewriteSuccess(originalTestCode, originalTestTree, rewrittenTestCode, originalProjectFile, rewrittenProjectFile)
     | ParseError -> RewriteError

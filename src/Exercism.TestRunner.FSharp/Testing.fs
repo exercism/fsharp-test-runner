@@ -289,13 +289,15 @@ let private testRunFromTestRunnerError errors =
 
 let runTests context =
     match rewriteTests context with
-    | RewriteSuccess (originalTestCode, originalTestTree, rewrittenTestCode) ->
+    | RewriteSuccess (originalTestCode, originalTestTree, rewrittenTestCode, originalProjectFile, rewrittenProjectFile) ->
         try
             File.WriteAllText(context.TestsFile, rewrittenTestCode.ToString())
+            File.WriteAllText(context.ProjectFile, rewrittenProjectFile.ToString())
 
             match DotnetCli.runTests originalTestCode originalTestTree context with
             | DotnetCli.TestRunSuccess testResults -> testRunFromTestRunnerSuccess testResults
             | DotnetCli.TestRunError errors -> testRunFromTestRunnerError errors
         finally
             File.WriteAllText(context.TestsFile, originalTestCode.ToString())
+            File.WriteAllText(context.ProjectFile, originalProjectFile.ToString())
     | RewriteError -> testRunFromTestRunnerError [ "Could not modify test suite" ]
