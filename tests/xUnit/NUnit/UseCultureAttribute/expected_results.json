@@ -1,6 +1,0 @@
-{
-  "version": 3,
-  "status": "error",
-  "message": "FakeTests.fs(9,3): error FS0001: This expression was expected to have type\u001D    \u0027string\u0027    \u001Dbut here has type\u001D    \u0027unit\u0027\nFakeTests.fs(9,3): error FS0267: This is not a valid constant expression or custom attribute value",
-  "tests": []
-}
