@@ -2,8 +2,6 @@ module Exercism.TestRunner.FSharp.IntegrationTests.Tests
 
 open System
 open System.IO
-open System.Threading
-open System.Threading.Tasks
 open Xunit
 open FsUnit.Xunit
 
@@ -84,71 +82,169 @@ let private assertSolutionHasExpectedResultsWithSlug (directory: string) (slug: 
 let private assertSolutionHasExpectedResults (directory: string) =
     assertSolutionHasExpectedResultsWithSlug directory "Fake"
 
-[<Fact>]
-let ``Single compile error`` () =
-    assertSolutionHasExpectedResults "SingleCompileError"
+module NUnit =    
+    let private assertSolutionHasExpectedResults (directory: string) =
+        assertSolutionHasExpectedResults (Path.Combine("NUnit", directory))
 
-[<Fact>]
-let ``Multiple compile errors`` () =
-    assertSolutionHasExpectedResults "MultipleCompileErrors"
+    let private assertSolutionHasExpectedResultsWithSlug (directory: string) (slug: string) =
+        assertSolutionHasExpectedResultsWithSlug (Path.Combine("NUnit", directory)) slug
 
-[<Fact>]
-let ``Multiple tests that pass`` () =
-    assertSolutionHasExpectedResults "MultipleTestsWithAllPasses"
+    [<Fact>]
+    let ``Single compile error`` () =
+        assertSolutionHasExpectedResults "SingleCompileError"
 
-[<Fact>]
-let ``Multiple tests and single fail`` () =
-    assertSolutionHasExpectedResults "MultipleTestsWithSingleFail"
+    [<Fact>]
+    let ``Multiple compile errors`` () =
+        assertSolutionHasExpectedResults "MultipleCompileErrors"
 
-[<Fact>]
-let ``Multiple tests and multiple fails`` () =
-    assertSolutionHasExpectedResults "MultipleTestsWithMultipleFails"
+    [<Fact>]
+    let ``Multiple tests that pass`` () =
+        assertSolutionHasExpectedResults "MultipleTestsWithAllPasses"
 
-[<Fact>]
-let ``Single test that passes`` () =
-    assertSolutionHasExpectedResults "SingleTestThatPasses"
+    [<Fact>]
+    let ``Multiple tests and single fail`` () =
+        assertSolutionHasExpectedResults "MultipleTestsWithSingleFail"
 
-[<Fact>]
-let ``Single test that passes with different slug`` () =
-    assertSolutionHasExpectedResultsWithSlug "SingleTestThatPassesWithDifferentSlug" "Foo"
+    [<Fact>]
+    let ``Multiple tests and multiple fails`` () =
+        assertSolutionHasExpectedResults "MultipleTestsWithMultipleFails"
 
-[<Fact>]
-let ``Single test that fails`` () =
-    assertSolutionHasExpectedResults "SingleTestThatFails"
+    [<Fact>]
+    let ``Single test that passes`` () =
+        assertSolutionHasExpectedResults "SingleTestThatPasses"
 
-[<Fact>]
-let ``Not implemented`` () =
-    assertSolutionHasExpectedResults "NotImplemented"
+    [<Fact>]
+    let ``Single test that passes with different slug`` () =
+        assertSolutionHasExpectedResultsWithSlug "SingleTestThatPassesWithDifferentSlug" "Foo"
 
-[<Fact>]
-let ``Quoted and non-quoted tests`` () =
-    assertSolutionHasExpectedResults "QuotedAndNonQuotedTests"
+    [<Fact>]
+    let ``Single test that fails`` () =
+        assertSolutionHasExpectedResults "SingleTestThatFails"
 
-[<Fact>]
-let ``Different test code formats`` () =
-    assertSolutionHasExpectedResults "DifferentTestCodeFormats"
+    [<Fact>]
+    let ``Not implemented`` () =
+        assertSolutionHasExpectedResults "NotImplemented"
 
-[<Fact>]
-let ``All tests with task`` () =
-    assertSolutionHasExpectedResults "AllTestsWithTask"
+    [<Fact>]
+    let ``Quoted and non-quoted tests`` () =
+        assertSolutionHasExpectedResults "QuotedAndNonQuotedTests"
 
-[<Fact>]
-let ``Some tests with task`` () =
-    assertSolutionHasExpectedResults "SomeTestsWithTask"
+    [<Fact>]
+    let ``Multiple tests with test ouput`` () =
+        assertSolutionHasExpectedResults "MultipleTestsWithTestOutput"
 
-[<Fact>]
-let ``UseCulture attribute`` () =
-    assertSolutionHasExpectedResults "UseCultureAttribute"
+    [<Fact>]
+    let ``Multiple tests with test ouput exceeding limit`` () =
+        assertSolutionHasExpectedResults "MultipleTestsWithTestOutputExceedingLimit"
 
-[<Fact>]
-let ``Different types of tests`` () =
-    assertSolutionHasExpectedResults "DifferentTypesOfTests"
+    [<Fact>]
+    let ``Different test code formats`` () =
+        assertSolutionHasExpectedResults "DifferentTestCodeFormats"
 
-[<Fact>]
-let ``.NET 5 project`` () =
-    assertSolutionHasExpectedResults "DotnetFiveProject"
-    
-[<Fact>]
-let ``Class-based tests`` () =
-    assertSolutionHasExpectedResults "ClassBasedTests"
+    [<Fact>]
+    let ``All tests with task`` () =
+        assertSolutionHasExpectedResults "AllTestsWithTask"
+
+    [<Fact>]
+    let ``Some tests with task`` () =
+        assertSolutionHasExpectedResults "SomeTestsWithTask"
+
+    [<Fact>]
+    let ``UseCulture attribute`` () =
+        assertSolutionHasExpectedResults "UseCultureAttribute"
+
+    [<Fact>]
+    let ``Different types of tests`` () =
+        assertSolutionHasExpectedResults "DifferentTypesOfTests"
+
+    [<Fact>]
+    let ``.NET 5 project`` () =
+        assertSolutionHasExpectedResults "DotnetFiveProject"
+
+    [<Fact>]
+    let ``Class-based tests`` () =
+        assertSolutionHasExpectedResults "ClassBasedTests"
+
+module xUnit =    
+    let private assertSolutionHasExpectedResults (directory: string) =
+        assertSolutionHasExpectedResults (Path.Combine("xUnit", directory))
+
+    let private assertSolutionHasExpectedResultsWithSlug (directory: string) (slug: string) =
+        assertSolutionHasExpectedResultsWithSlug (Path.Combine("xUnit", directory)) slug
+
+    [<Fact>]
+    let ``Single compile error`` () =
+        assertSolutionHasExpectedResults "SingleCompileError"
+
+    [<Fact>]
+    let ``Multiple compile errors`` () =
+        assertSolutionHasExpectedResults "MultipleCompileErrors"
+
+    [<Fact>]
+    let ``Multiple tests that pass`` () =
+        assertSolutionHasExpectedResults "MultipleTestsWithAllPasses"
+
+    [<Fact>]
+    let ``Multiple tests and single fail`` () =
+        assertSolutionHasExpectedResults "MultipleTestsWithSingleFail"
+
+    [<Fact>]
+    let ``Multiple tests and multiple fails`` () =
+        assertSolutionHasExpectedResults "MultipleTestsWithMultipleFails"
+
+    [<Fact>]
+    let ``Single test that passes`` () =
+        assertSolutionHasExpectedResults "SingleTestThatPasses"
+
+    [<Fact>]
+    let ``Single test that passes with different slug`` () =
+        assertSolutionHasExpectedResultsWithSlug "SingleTestThatPassesWithDifferentSlug" "Foo"
+
+    [<Fact>]
+    let ``Single test that fails`` () =
+        assertSolutionHasExpectedResults "SingleTestThatFails"
+
+    [<Fact>]
+    let ``Not implemented`` () =
+        assertSolutionHasExpectedResults "NotImplemented"
+
+    [<Fact>]
+    let ``Quoted and non-quoted tests`` () =
+        assertSolutionHasExpectedResults "QuotedAndNonQuotedTests"
+
+    [<Fact>]
+    let ``Multiple tests with test ouput`` () =
+        assertSolutionHasExpectedResults "MultipleTestsWithTestOutput"
+
+    [<Fact>]
+    let ``Multiple tests with test ouput exceeding limit`` () =
+        assertSolutionHasExpectedResults "MultipleTestsWithTestOutputExceedingLimit"
+
+    [<Fact>]
+    let ``Different test code formats`` () =
+        assertSolutionHasExpectedResults "DifferentTestCodeFormats"
+
+    [<Fact>]
+    let ``All tests with task`` () =
+        assertSolutionHasExpectedResults "AllTestsWithTask"
+
+    [<Fact>]
+    let ``Some tests with task`` () =
+        assertSolutionHasExpectedResults "SomeTestsWithTask"
+
+    [<Fact>]
+    let ``UseCulture attribute`` () =
+        assertSolutionHasExpectedResults "UseCultureAttribute"
+
+    [<Fact>]
+    let ``Different types of tests`` () =
+        assertSolutionHasExpectedResults "DifferentTypesOfTests"
+
+    [<Fact>]
+    let ``.NET 5 project`` () =
+        assertSolutionHasExpectedResults "DotnetFiveProject"
+
+    [<Fact>]
+    let ``Class-based tests`` () =
+        assertSolutionHasExpectedResults "ClassBasedTests"
     

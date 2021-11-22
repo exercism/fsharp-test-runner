@@ -3,6 +3,7 @@ module Exercism.TestRunner.FSharp.Testing
 open System
 open System.Diagnostics
 open System.IO
+open System.Text.RegularExpressions
 open System.Xml.Serialization
 open Exercism.TestRunner.FSharp.Core
 open Exercism.TestRunner.FSharp.Rewrite
@@ -104,14 +105,10 @@ module TestResults =
         |> Option.map String.normalize
         |> Option.map truncate
         
+    let private testMethodName = Regex(@"^(?:.*?\.)?(.+?)(?:<.+>)?(?:\(.*\))?$", RegexOptions.Compiled)    
+    
     let private findTestMethodBinding (originalTestTree: ParsedInput) (xmlUnitTestResult: XmlUnitTestResult) =
-        // For FsCheck tests, the generated test name includes the generic type of the arguments, which we need to strip
-        let openBracketIndex = xmlUnitTestResult.TestName.LastIndexOf('<')
-        let startIndex = xmlUnitTestResult.TestName.IndexOf('.') + 1
-        let originalTestName =
-            if openBracketIndex = -1 then xmlUnitTestResult.TestName.[startIndex..]
-            else xmlUnitTestResult.TestName.[startIndex..openBracketIndex - 1]
-
+        let originalTestName = testMethodName.Match(xmlUnitTestResult.TestName).Groups.[1].Value
         let mutable testMethodBinding = None
 
         let visitor =
@@ -193,6 +190,7 @@ module TestResults =
         { Name = xmlUnitTestResult |> toName
           Status = xmlUnitTestResult |> toStatus
           Message = xmlUnitTestResult |> toMessage
+          Output = xmlUnitTestResult |> toOutput
           TaskId = testMethodBinding |> toTaskId
           TestCode = testMethodBinding |> (toTestCode originalTestCode)
           Line = testMethodBinding |> toLine }
