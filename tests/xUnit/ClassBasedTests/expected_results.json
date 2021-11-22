@@ -1,0 +1,21 @@
+{
+  "version": 3,
+  "status": "pass",
+  "tests": [
+    {
+      "name": "ClassBasedTestsTests.Add should add numbers",
+      "status": "pass",
+      "test_code": "add 1 1 |\u003E should equal 2"
+    },
+    {
+      "name": "ClassBasedTestsTests.Sub should subtract numbers",
+      "status": "pass",
+      "test_code": "sub 7 3 |\u003E should equal 4"
+    },
+    {
+      "name": "ClassBasedTestsTests.Mul should multiply numbers",
+      "status": "pass",
+      "test_code": "mul 2 3 |\u003E should equal 6"
+    }
+  ]
+}

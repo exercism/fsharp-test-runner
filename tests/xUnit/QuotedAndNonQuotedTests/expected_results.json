@@ -1,0 +1,16 @@
+{
+  "version": 3,
+  "status": "pass",
+  "tests": [
+    {
+      "name": "QuotedAndNonQuotedTestsTests.Add should add numbers",
+      "status": "pass",
+      "test_code": "add 1 1 |\u003E should equal 2"
+    },
+    {
+      "name": "QuotedAndNonQuotedTestsTests.Sub_should_subtract_numbers",
+      "status": "pass",
+      "test_code": "sub 3 1 |\u003E should equal 2"
+    }
+  ]
+}

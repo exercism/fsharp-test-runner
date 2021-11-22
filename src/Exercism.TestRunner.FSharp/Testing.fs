@@ -39,7 +39,6 @@ module TestResults =
         [<XmlElement(ElementName = "StdOut", Namespace = "http://microsoft.com/schemas/VisualStudio/TeamTest/2010")>]
         member val StdOut: string = null with get, set
 
-
         [<XmlElement(ElementName = "ErrorInfo", Namespace = "http://microsoft.com/schemas/VisualStudio/TeamTest/2010")>]
         member val ErrorInfo: XmlErrorInfo = null with get, set
 
@@ -252,12 +251,8 @@ module DotnetCli =
         TestResults.parse originalTestCode originalTestTree context
 
     let runTests originalTestCode originalTestTree context =
-        let command = "dotnet"
-
-        let arguments =
-            $"test --verbosity=quiet --logger \"trx;LogFileName=%s{Path.GetFileName(context.TestResultsFile)}\" /flp:v=q"
-
-        Process.exec command arguments (Path.GetDirectoryName(context.TestsFile))
+        let solutionDir = Path.GetDirectoryName(context.TestsFile)
+        Process.exec "dotnet" $"test --verbosity=quiet --logger \"trx;LogFileName=%s{Path.GetFileName(context.TestResultsFile)}\" /flp:v=q" solutionDir
 
         let buildErrors = parseBuildErrors context
 
@@ -291,13 +286,15 @@ let private testRunFromTestRunnerError errors =
 
 let runTests context =
     match rewriteTests context with
-    | RewriteSuccess (originalTestCode, originalTestTree, rewrittenTestCode) ->
+    | RewriteSuccess (originalTestCode, originalTestTree, rewrittenTestCode, originalProjectFile, rewrittenProjectFile) ->
         try
             File.WriteAllText(context.TestsFile, rewrittenTestCode.ToString())
+            File.WriteAllText(context.ProjectFile, rewrittenProjectFile.ToString())
 
             match DotnetCli.runTests originalTestCode originalTestTree context with
             | DotnetCli.TestRunSuccess testResults -> testRunFromTestRunnerSuccess testResults
             | DotnetCli.TestRunError errors -> testRunFromTestRunnerError errors
         finally
             File.WriteAllText(context.TestsFile, originalTestCode.ToString())
+            File.WriteAllText(context.ProjectFile, originalProjectFile.ToString())
     | RewriteError -> testRunFromTestRunnerError [ "Could not modify test suite" ]

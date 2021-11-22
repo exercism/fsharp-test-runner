@@ -22,5 +22,6 @@ type TestRun =
 type TestRunContext =
     { TestsFile: string
       TestResultsFile: string
+      ProjectFile: string
       BuildLogFile: string
       ResultsFile: string }

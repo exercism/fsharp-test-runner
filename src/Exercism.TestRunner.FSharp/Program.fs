@@ -30,6 +30,7 @@ let private createTestRunContext options =
           options.InputDirectory
           </> "TestResults"
           </> "tests.trx"
+      ProjectFile = options.InputDirectory </> $"%s{exercise}.fsproj"
       BuildLogFile = options.InputDirectory </> "msbuild.log"
       ResultsFile = options.OutputDirectory </> "results.json" }
 

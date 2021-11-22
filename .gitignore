@@ -1,6 +1,6 @@
 # Build files
-bin/
-obj/
+*/**/bin/
+*/**/obj/
 
 # IDE files
 .vs/
@@ -35,3 +35,7 @@ msbuild.log
 
 # SDK files
 global.json
+
+TestResults/
+
+!/bin/

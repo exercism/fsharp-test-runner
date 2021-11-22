@@ -3,6 +3,12 @@
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>net6.0</TargetFramework>
+
+    <!--
+      Temporarily disable nuget dependency constraint warning.
+      Remove this once we've upgraded to Fantomas 4.6
+    -->
+    <NoWarn>NU1608</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
