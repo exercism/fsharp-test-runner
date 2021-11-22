@@ -26,9 +26,9 @@ jobs:
         with:
           context: .
           push: false
-          tags: exercism/fsharp-test-runner:latest
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          tags: exercism/fsharp-test-runner
+          cache-from: type=registry,ref=exercism/fsharp-test-runner
+          cache-to: type=inline
 
       - name: Run Tests in Docker
         run: bin/run-tests-in-docker.sh
