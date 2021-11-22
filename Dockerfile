@@ -33,9 +33,8 @@ RUN dotnet publish -r linux-musl-x64 -c Release -o /opt/test-runner --no-restore
 FROM mcr.microsoft.com/dotnet/sdk:6.0.100-alpine3.14-amd64 AS runtime
 WORKDIR /opt/test-runner
 
-COPY --from=build /opt/test-runner/ .
-RUN true
 COPY --from=build /root/.nuget/packages/ /root/.nuget/packages/
+COPY --from=build /opt/test-runner/ .
 
 COPY bin/ /opt/test-runner/bin/
 COPY Directory.Build.props /
