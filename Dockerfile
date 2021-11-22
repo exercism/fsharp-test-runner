@@ -35,9 +35,7 @@ FROM mcr.microsoft.com/dotnet/sdk:6.0.100-alpine3.14-amd64 AS runtime
 WORKDIR /opt/test-runner
 
 COPY --from=build /root/.nuget/packages/ /root/.nuget/packages/
-RUN true
 COPY --from=build /opt/test-runner/ .
-
-COPY bin/ /opt/test-runner/bin/
+COPY bin/ /bin/
 
 ENTRYPOINT ["sh", "/opt/test-runner/bin/run.sh"]
