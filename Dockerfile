@@ -17,7 +17,8 @@ RUN dotnet add package Aether -v 8.3.1
 RUN dotnet add package BenchmarkDotNet -v 0.12.1
 RUN dotnet add package FakeItEasy -v 6.2.1
 RUN dotnet add package FsCheck.Xunit -v 2.14.3
-RUN dotnet add package FsCheck.NUnit -v 2.14.3
+RUN dotnet add package FsCheck.Nunit -v 2.16.3
+RUN dotnet add package FSharp.Core -v 6.0.1
 
 WORKDIR /app
 
@@ -29,7 +30,7 @@ RUN dotnet restore -r linux-musl-x64
 COPY src/Exercism.TestRunner.FSharp/ ./
 RUN dotnet publish -r linux-musl-x64 -c Release -o /opt/test-runner --no-restore --self-contained true
 
-# Build runtime image
+# # Build runtime image
 FROM mcr.microsoft.com/dotnet/sdk:6.0.100-alpine3.14-amd64 AS runtime
 WORKDIR /opt/test-runner
 
@@ -37,6 +38,5 @@ COPY --from=build /root/.nuget/packages/ /root/.nuget/packages/
 COPY --from=build /opt/test-runner/ .
 
 COPY bin/ /opt/test-runner/bin/
-COPY Directory.Build.props /
 
 ENTRYPOINT ["sh", "/opt/test-runner/bin/run.sh"]

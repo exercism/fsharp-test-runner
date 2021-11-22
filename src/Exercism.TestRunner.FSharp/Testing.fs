@@ -40,7 +40,6 @@ module TestResults =
         [<XmlElement(ElementName = "StdOut", Namespace = "http://microsoft.com/schemas/VisualStudio/TeamTest/2010")>]
         member val StdOut: string = null with get, set
 
-
         [<XmlElement(ElementName = "ErrorInfo", Namespace = "http://microsoft.com/schemas/VisualStudio/TeamTest/2010")>]
         member val ErrorInfo: XmlErrorInfo = null with get, set
 
