@@ -4,3 +4,10 @@
 !src/Exercism.TestRunner.FSharp
 src/Exercism.TestRunner.FSharp/bin
 src/Exercism.TestRunner.FSharp/obj
+.appends
+.git
+.github
+.gitignore
+.gitattributes
+.dockerignore
+Dockerfile
