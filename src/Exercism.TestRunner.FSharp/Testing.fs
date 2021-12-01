@@ -104,7 +104,7 @@ module TestResults =
         |> Option.map String.normalize
         |> Option.map truncate
         
-    let private testMethodName = Regex(@"^(?:.*?\.)?(.+?)(?:<.+>)?(?:\(.*\))?$", RegexOptions.Compiled)    
+    let private testMethodName = Regex(@"^(?:.*?\.)?(.+?)(?:<.+>)?$", RegexOptions.Compiled)    
     
     let private findTestMethodBinding (originalTestTree: ParsedInput) (xmlUnitTestResult: XmlUnitTestResult) =
         let originalTestName = testMethodName.Match(xmlUnitTestResult.TestName).Groups.[1].Value
