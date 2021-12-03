@@ -13,12 +13,12 @@
       "test_code": "add 2 3 |\u003E should equal 5"
     },
     {
-      "name": "Add should add more numbers with expected()",
+      "name": "Add should add more numbers with expected",
       "status": "pass",
       "test_code": "add 2 3"
     },
     {
-      "name": "Sub should subtract numbers\u003CInt32\u003E(4,7,3)",
+      "name": "Sub should subtract numbers",
       "status": "pass",
       "test_code": "sub x y |\u003E should equal expected"
     },

@@ -74,8 +74,13 @@ module TestResults =
         else
             str
 
+    let private testMethodName =
+        let regex = Regex(@"^(?:.*?\.)?(.+?)(?:<.+>\(.+\)|\(\))?$", RegexOptions.Compiled)
+        fun (xmlUnitTestResult: XmlUnitTestResult) ->
+            regex.Match(xmlUnitTestResult.TestName).Groups.[1].Value
+    
     let private toName (xmlUnitTestResult: XmlUnitTestResult) =
-        xmlUnitTestResult.TestName.Replace("+Tests", "")
+        testMethodName xmlUnitTestResult
 
     let private toStatus (xmlUnitTestResult: XmlUnitTestResult) =
         match xmlUnitTestResult.Outcome with
@@ -103,11 +108,10 @@ module TestResults =
         |> Option.bind (fun output -> output.StdOut |> Option.ofObj)
         |> Option.map String.normalize
         |> Option.map truncate
-        
-    let private testMethodName = Regex(@"^(?:.*?\.)?(.+?)(?:<.+>)?(?:\(.*\))?$", RegexOptions.Compiled)    
+           
     
     let private findTestMethodBinding (originalTestTree: ParsedInput) (xmlUnitTestResult: XmlUnitTestResult) =
-        let originalTestName = testMethodName.Match(xmlUnitTestResult.TestName).Groups.[1].Value
+        let originalTestName = testMethodName xmlUnitTestResult
         let mutable testMethodBinding = None
 
         let visitor =

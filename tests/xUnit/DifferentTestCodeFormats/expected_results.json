@@ -3,22 +3,22 @@
   "status": "pass",
   "tests": [
     {
-      "name": "DifferentTestCodeFormatsTests.Single line test code on same line",
+      "name": "Single line test code on same line",
       "status": "pass",
       "test_code": "add 1 1 |\u003E should equal 2"
     },
     {
-      "name": "DifferentTestCodeFormatsTests.Single line test code on next line",
+      "name": "Single line test code on next line",
       "status": "pass",
       "test_code": "sub 7 3 |\u003E should equal 4"
     },
     {
-      "name": "DifferentTestCodeFormatsTests.Multiple lines of test code at same indentation",
+      "name": "Multiple lines of test code at same indentation",
       "status": "pass",
       "test_code": "let expected = 6\nmul 2 3 |\u003E should equal expected"
     },
     {
-      "name": "DifferentTestCodeFormatsTests.Multiple lines of test code with different indentation",
+      "name": "Multiple lines of test code with different indentation",
       "status": "pass",
       "test_code": "let expected = 6\nlet actual =\n    let x = 2\n    let y = 3\n    mul x y\nactual |\u003E should equal expected"
     }
