@@ -3,17 +3,17 @@
   "status": "pass",
   "tests": [
     {
-      "name": "DotnetFiveProjectTests.Add should add numbers",
+      "name": "Add should add numbers",
       "status": "pass",
       "test_code": "add 1 1 |\u003E should equal 2"
     },
     {
-      "name": "DotnetFiveProjectTests.Sub should subtract numbers",
+      "name": "Sub should subtract numbers",
       "status": "pass",
       "test_code": "sub 7 3 |\u003E should equal 4"
     },
     {
-      "name": "DotnetFiveProjectTests.Mul should multiply numbers",
+      "name": "Mul should multiply numbers",
       "status": "pass",
       "test_code": "mul 2 3 |\u003E should equal 6"
     }
