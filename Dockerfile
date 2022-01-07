@@ -19,6 +19,7 @@ RUN dotnet add package FakeItEasy -v 6.2.1
 RUN dotnet add package FsCheck.Xunit -v 2.14.3
 RUN dotnet add package FsCheck.Nunit -v 2.16.3
 RUN dotnet add package FSharp.Core -v 6.0.1
+RUN dotnet add package FParsec -v 1.1.1
 
 WORKDIR /app
 
