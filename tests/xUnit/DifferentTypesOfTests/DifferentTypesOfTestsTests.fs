@@ -12,6 +12,14 @@ open DifferentTypesOfTests
 type CustomPropertyAttribute() =
     inherit PropertyAttribute()
 
+type Letters =
+    static member Chars () =
+        Arb.Default.Char()
+        |> Arb.filter (fun c -> 'A' <= c && c <= 'Z')    
+
+type LetterAttribute () =
+    inherit PropertyAttribute(Arbitrary = [| typeof<Letters> |])
+
 [<Fact>]
 let ``Add should add numbers`` () = add 1 1 |> should equal 2
 
@@ -28,6 +36,9 @@ let ``Sub should subtract numbers`` (expected, x, y) = sub x y |> should equal e
 
 [<CustomPropertyAttribute(Skip = "Remove this Skip property to run this test")>]
 let ``Mul should multiply numbers`` (x, y) = mul x y |> should equal (x * y)
+
+[<LetterAttribute(Skip = "Remove this Skip property to run this test")>]
+let ``Letter should be uppercase`` (letter) = Char.IsUpper(letter) |> should equal true
 
 [<Property(Skip = "Remove this Skip property to run this test")>]
 let ``Div should divide numbers`` (x) : Property =

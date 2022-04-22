@@ -153,7 +153,7 @@ module TestResults =
                                               _,
                                               _,
                                               _) as binding,
-                                              _) when id.[1].idText = originalTestName ->
+                                              _) when id.Length > 1 && id.[1].idText = originalTestName ->
                         testMethodBinding <- Some binding
                     | _ -> ()
 
