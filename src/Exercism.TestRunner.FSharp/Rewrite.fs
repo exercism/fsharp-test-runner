@@ -4,14 +4,12 @@ open System.IO
 open Exercism.TestRunner.FSharp.Core
 open Exercism.TestRunner.FSharp.Visitor
 open FSharp.Compiler.Syntax
-open FSharp.Compiler.SyntaxTrivia
 open FSharp.Compiler.Text
-open FSharp.Compiler.Xml
 open Fantomas.Core
 open Fantomas.FCS.Parse
 
 type ParseResult =
-    | ParseSuccess of Code: ISourceText * Tree: ParsedInput
+    | ParseSuccess of Source: string * SourceText: ISourceText * Tree: ParsedInput
     | ParseError
 
 type RewriteResult =
@@ -50,16 +48,17 @@ type EnableAllTests() =
 
 let private parseFile (filePath: string) =
     if File.Exists(filePath) then
-        let source = File.ReadAllText(filePath) |> SourceText.ofString
-        let tree, _diagnostics = parseFile false source []
+        let source = File.ReadAllText(filePath)
+        let sourceText = source |> SourceText.ofString
+        let tree, diagnostics = parseFile false sourceText []
         Some tree // TODO: use diagnostics to determine success
-        |> Option.map (fun tree -> ParseSuccess(source, tree))
+        |> Option.map (fun tree -> ParseSuccess(source, sourceText, tree))
         |> Option.defaultValue ParseError
     else
         ParseError
 
-let private toCode tree =
-    CodeFormatter.FormatASTAsync(tree, "", FormatConfig.FormatConfig.Default)
+let private toCode code tree =
+    CodeFormatter.FormatASTAsync(tree, code, FormatConfig.FormatConfig.Default)
     |> Async.RunSynchronously
     |> SourceText.ofString
 
@@ -72,8 +71,8 @@ let private rewriteProjectFile (context: TestRunContext) =
 
 let rewriteTests (context: TestRunContext) =
     match parseFile context.TestsFile with
-    | ParseSuccess (originalTestCode, originalTestTree) ->
-        let rewrittenTestCode = originalTestTree |> enableAllTests |> toCode
+    | ParseSuccess (originalSource, originalSourceText, originalTestTree) ->
+        let rewrittenTestCode = originalTestTree |> enableAllTests |> toCode originalSource
         let (originalProjectFile, rewrittenProjectFile) = rewriteProjectFile context
-        RewriteSuccess(originalTestCode, originalTestTree, rewrittenTestCode, originalProjectFile, rewrittenProjectFile)
+        RewriteSuccess(originalSourceText, originalTestTree, rewrittenTestCode, originalProjectFile, rewrittenProjectFile)
     | ParseError -> RewriteError
