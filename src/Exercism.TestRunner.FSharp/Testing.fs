@@ -8,7 +8,7 @@ open System.Xml.Serialization
 open Exercism.TestRunner.FSharp.Core
 open Exercism.TestRunner.FSharp.Rewrite
 open Exercism.TestRunner.FSharp.Visitor
-open FSharp.Compiler.SyntaxTree
+open FSharp.Compiler.Syntax
 open FSharp.Compiler.Text
 
 module String =
@@ -108,7 +108,6 @@ module TestResults =
         |> Option.bind (fun output -> output.StdOut |> Option.ofObj)
         |> Option.map String.normalize
         |> Option.map truncate
-           
     
     let private findTestMethodBinding (originalTestTree: ParsedInput) (xmlUnitTestResult: XmlUnitTestResult) =
         let originalTestName = testMethodName xmlUnitTestResult
@@ -120,14 +119,15 @@ module TestResults =
                     match moduleDecl with
                     | SynModuleDecl.Let
                         (_,
-                         [ SynBinding.Binding (_,
+                         [ SynBinding(_,
                                     _,
                                     _,
                                     _,
                                     _,
                                     _,
                                     _,
-                                    SynPat.LongIdent (LongIdentWithDots (id, _), _, _, _, _, _),
+                                    SynPat.LongIdent (SynLongIdent (id, _, _), _, _, _, _, _),
+                                    _,
                                     _,
                                     _,
                                     _,
@@ -141,14 +141,15 @@ module TestResults =
                 member this.VisitSynMemberDefn(memberDefn) =
                     match memberDefn with
                     | SynMemberDefn.Member
-                        ( SynBinding.Binding (_,
+                        ( SynBinding (_,
                                               _,
                                               _,
                                               _,
                                               _,
                                               _,
                                               _,
-                                              SynPat.LongIdent (LongIdentWithDots (id, _), _, _, _, _, _),
+                                              SynPat.LongIdent (SynLongIdent (id, _, _), _, _, _, _, _),
+                                              _,
                                               _,
                                               _,
                                               _,
@@ -164,7 +165,7 @@ module TestResults =
         // Use .Value is safe here as we are guaranteed the test method exists
         testMethodBinding.Value 
 
-    let private toTestCode (originalTestCode: ISourceText) ((Binding (_, _, _, _, _, _, _, _, _, expr, _, _)): SynBinding) =
+    let private toTestCode (originalTestCode: ISourceText) ((SynBinding (_, _, _, _, _, _, _, _, _, expr, _, _, _)): SynBinding) =
         let range = expr.Range 
         
         if range.StartLine = range.EndLine then
@@ -174,18 +175,18 @@ module TestResults =
             |> List.map (fun line -> originalTestCode.GetLineString(line - 1).[range.StartColumn..])
             |> String.concat "\n"
         
-    let private toTaskId ((Binding (_, _, _, _, attrs, _, _, _, _, _, _, _)): SynBinding) =           
+    let private toTaskId ((SynBinding (_, _, _, _, attrs, _, _, _, _, _, _, _, _)): SynBinding) =           
         attrs
         |> Seq.collect (fun attrList -> attrList.Attributes)
         |> Seq.tryPick (fun attr ->
             match attr.TypeName with
-            | (LongIdentWithDots (id, _)) when (id.ToString()) = "[Task]" ->
+            | (SynLongIdent (id, _, _)) when (id.ToString()) = "[Task]" ->
                 match attr.ArgExpr with
                 | SynExpr.Paren(SynExpr.Const(SynConst.Int32(i), _), _, _, _) -> Some (int i)
                 | _ -> None
             | _ -> None)
         
-    let private toLine ((Binding (_, _, _, _, _, _, _, _, _, _, range, _)): SynBinding) = range.StartLine
+    let private toLine ((SynBinding (_, _, _, _, _, _, _, _, _, _, range, _, _)): SynBinding) = range.StartLine
 
     let private toTestResult originalTestCode originalTestTree (xmlUnitTestResult: XmlUnitTestResult) =
         let testMethodBinding = findTestMethodBinding originalTestTree xmlUnitTestResult
