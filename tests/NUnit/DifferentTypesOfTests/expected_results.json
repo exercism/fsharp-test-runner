@@ -29,6 +29,12 @@
       "test_code": "mul x y |\u003E should equal (x * y)"
     },
     {
+      "name": "Letter should be uppercase",
+      "status": "pass",
+      "output": "Ok, passed 100 tests.",
+      "test_code": "Char.IsUpper(letter) |\u003E should equal true"
+    },
+    {
       "name": "Div should divide numbers",
       "status": "pass",
       "output": "Ok, passed 100 tests.",
