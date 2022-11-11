@@ -16,6 +16,7 @@ RUN dotnet add package Exercism.Tests -v 0.1.0-beta1
 RUN dotnet add package Aether -v 8.3.1
 RUN dotnet add package BenchmarkDotNet -v 0.12.1
 RUN dotnet add package FakeItEasy -v 6.2.1
+RUN dotnet add package FsCheck -v 2.16.3
 RUN dotnet add package FsCheck.Xunit -v 2.14.3
 RUN dotnet add package FsCheck.Nunit -v 2.16.3
 RUN dotnet add package FSharp.Core -v 6.0.1
@@ -31,14 +32,15 @@ RUN dotnet restore -r linux-musl-x64
 COPY src/Exercism.TestRunner.FSharp/ ./
 RUN dotnet publish -r linux-musl-x64 -c Release -o /opt/test-runner --no-restore --self-contained true
 
-# # Build runtime image
+# Build runtime image
 FROM mcr.microsoft.com/dotnet/sdk:7.0.100-alpine3.16-amd64 AS runtime
 WORKDIR /opt/test-runner
+
+# Enable rolling forward the .NET SDK used to be backwards-compatible
+ENV DOTNET_ROLL_FORWARD Major
 
 COPY --from=build /root/.nuget/packages/ /root/.nuget/packages/
 COPY --from=build /opt/test-runner/ .
 COPY bin/ bin/
-
-ENV DOTNET_ROLL_FORWARD Major
 
 ENTRYPOINT ["sh", "/opt/test-runner/bin/run.sh"]
