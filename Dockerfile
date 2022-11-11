@@ -1,4 +1,4 @@
-FROM mcr.microsoft.com/dotnet/sdk:6.0.401-alpine3.16-amd64 AS build
+FROM mcr.microsoft.com/dotnet/sdk:7.0.100-alpine3.16-amd64 AS build
 
 WORKDIR /tmp
 
@@ -32,11 +32,13 @@ COPY src/Exercism.TestRunner.FSharp/ ./
 RUN dotnet publish -r linux-musl-x64 -c Release -o /opt/test-runner --no-restore --self-contained true
 
 # # Build runtime image
-FROM mcr.microsoft.com/dotnet/sdk:6.0.401-alpine3.16-amd64 AS runtime
+FROM mcr.microsoft.com/dotnet/sdk:7.0.100-alpine3.16-amd64 AS runtime
 WORKDIR /opt/test-runner
 
 COPY --from=build /root/.nuget/packages/ /root/.nuget/packages/
 COPY --from=build /opt/test-runner/ .
 COPY bin/ bin/
+
+ENV DOTNET_ROLL_FORWARD Major
 
 ENTRYPOINT ["sh", "/opt/test-runner/bin/run.sh"]
