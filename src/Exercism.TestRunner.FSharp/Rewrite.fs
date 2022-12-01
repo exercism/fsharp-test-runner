@@ -67,7 +67,7 @@ let private enableAllTests parsedInput =
     
 let private rewriteProjectFile (context: TestRunContext) =
     let originalProjectFile = File.ReadAllText(context.ProjectFile)
-    originalProjectFile, originalProjectFile.Replace("net5.0", "net6.0")
+    originalProjectFile, originalProjectFile.Replace("net5.0", "net6.0").Replace("net6.0", "net7.0")
 
 let rewriteTests (context: TestRunContext) =
     match parseFile context.TestsFile with
