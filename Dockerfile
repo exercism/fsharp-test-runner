@@ -1,4 +1,4 @@
-FROM mcr.microsoft.com/dotnet/sdk:7.0.100-alpine3.16-amd64 AS build
+FROM mcr.microsoft.com/dotnet/sdk:7.0.400-alpine3.18-amd64 AS build
 
 WORKDIR /tmp
 
@@ -34,7 +34,7 @@ COPY src/Exercism.TestRunner.FSharp/ ./
 RUN dotnet publish -r linux-musl-x64 -c Release -o /opt/test-runner --no-restore --self-contained true
 
 # Build runtime image
-FROM mcr.microsoft.com/dotnet/sdk:7.0.100-alpine3.16-amd64 AS runtime
+FROM mcr.microsoft.com/dotnet/sdk:7.0.400-alpine3.18-amd64 AS runtime
 WORKDIR /opt/test-runner
 
 # Enable rolling forward the .NET SDK used to be backwards-compatible
