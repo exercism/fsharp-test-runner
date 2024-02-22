@@ -17,7 +17,7 @@ module String =
     let isNullOrWhiteSpace = System.String.IsNullOrWhiteSpace
 
 module Process =
-    let exec fileName arguments workingDirectory =
+    let exec (fileName: string) (arguments: string) workingDirectory =
         let psi = ProcessStartInfo(fileName, arguments)
         psi.WorkingDirectory <- workingDirectory
         psi.RedirectStandardInput <- true
