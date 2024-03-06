@@ -256,7 +256,9 @@ module DotnetCli =
 
     let runTests originalTestCode originalTestTree context =
         let solutionDir = Path.GetDirectoryName(context.TestsFile)
-        Process.exec "dotnet" $"test --verbosity=quiet --logger \"trx;LogFileName=%s{Path.GetFileName(context.TestResultsFile)}\" /flp:v=q" solutionDir
+
+        Process.exec "dotnet" "restore --source /root/.nuget/packages/" solutionDir
+        Process.exec "dotnet" $"test --no-restore --verbosity=quiet --logger \"trx;LogFileName=%s{Path.GetFileName(context.TestResultsFile)}\" /flp:v=q" solutionDir
 
         let buildErrors = parseBuildErrors context
 
