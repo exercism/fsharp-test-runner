@@ -3,9 +3,9 @@ module Exercism.TestRunner.FSharp.Rewrite
 open System.IO
 open Exercism.TestRunner.FSharp.Core
 open Exercism.TestRunner.FSharp.Visitor
-open FSharp.Compiler.Syntax
-open FSharp.Compiler.Text
 open Fantomas.Core
+open Fantomas.FCS.Syntax
+open Fantomas.FCS.Text
 open Fantomas.FCS.Parse
 
 type ParseResult =
@@ -57,8 +57,8 @@ let private parseFile (filePath: string) =
     else
         ParseError
 
-let private toCode code tree =
-    CodeFormatter.FormatASTAsync(tree, code, FormatConfig.FormatConfig.Default)
+let private toCode tree =
+    CodeFormatter.FormatASTAsync(tree)
     |> Async.RunSynchronously
     |> SourceText.ofString
 
@@ -67,12 +67,17 @@ let private enableAllTests parsedInput =
     
 let private rewriteProjectFile (context: TestRunContext) =
     let originalProjectFile = File.ReadAllText(context.ProjectFile)
-    originalProjectFile, originalProjectFile.Replace("net5.0", "net6.0").Replace("net6.0", "net8.0")
+    let rewrittenProjectFile =
+        originalProjectFile
+            .Replace("net5.0", "net8.0")
+            .Replace("net6.0", "net8.0")
+            .Replace("net7.0", "net8.0")
+    originalProjectFile, rewrittenProjectFile        
 
 let rewriteTests (context: TestRunContext) =
     match parseFile context.TestsFile with
-    | ParseSuccess (originalSource, originalSourceText, originalTestTree) ->
-        let rewrittenTestCode = originalTestTree |> enableAllTests |> toCode originalSource
-        let (originalProjectFile, rewrittenProjectFile) = rewriteProjectFile context
+    | ParseSuccess (originalSource, originalSourceText, originalTestTree) ->        
+        let rewrittenTestCode = originalTestTree |> enableAllTests |> toCode
+        let originalProjectFile, rewrittenProjectFile = rewriteProjectFile context
         RewriteSuccess(originalSourceText, originalTestTree, rewrittenTestCode, originalProjectFile, rewrittenProjectFile)
     | ParseError -> RewriteError

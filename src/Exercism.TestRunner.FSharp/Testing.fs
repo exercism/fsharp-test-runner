@@ -1,6 +1,5 @@
 module Exercism.TestRunner.FSharp.Testing
 
-open System
 open System.Diagnostics
 open System.IO
 open System.Text.RegularExpressions
@@ -8,8 +7,8 @@ open System.Xml.Serialization
 open Exercism.TestRunner.FSharp.Core
 open Exercism.TestRunner.FSharp.Rewrite
 open Exercism.TestRunner.FSharp.Visitor
-open FSharp.Compiler.Syntax
-open FSharp.Compiler.Text
+open Fantomas.FCS.Syntax
+open Fantomas.FCS.Text
 
 module String =
     let normalize (str: string) = str.Replace("\r\n", "\n").Trim()
