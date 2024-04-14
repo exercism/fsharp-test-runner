@@ -159,8 +159,8 @@ type SyntaxVisitor() =
             SynExpr.TryFinally
                 (this.VisitSynExpr tryExpr, this.VisitSynExpr finallyExpr, range, trySeqPoint, withSeqPoint, trivia)
         | SynExpr.Lazy(ex, range) -> SynExpr.Lazy(this.VisitSynExpr ex, range)
-        | SynExpr.Sequential(seqPoint, isTrueSeq, expr1, expr2, range) ->
-            SynExpr.Sequential(seqPoint, isTrueSeq, this.VisitSynExpr expr1, this.VisitSynExpr expr2, range)
+        | SynExpr.Sequential(seqPoint, isTrueSeq, expr1, expr2, range, trivia) ->
+            SynExpr.Sequential(seqPoint, isTrueSeq, this.VisitSynExpr expr1, this.VisitSynExpr expr2, range, trivia)
         | SynExpr.SequentialOrImplicitYield(seqPoint, expr1, expr2, ifNotStmt, range) ->
             SynExpr.SequentialOrImplicitYield
                 (seqPoint, this.VisitSynExpr expr1, this.VisitSynExpr expr2, this.VisitSynExpr ifNotStmt, range)
@@ -328,7 +328,7 @@ type SyntaxVisitor() =
         | SynMemberDefn.ImplicitCtor(access, attrs, ctorArgs, selfIdentifier, doc, range, trivia) ->
             SynMemberDefn.ImplicitCtor
                 (Option.map this.VisitSynAccess access, attrs |> List.map this.VisitSynAttributeList,
-                 this.VisitSynSimplePats ctorArgs, Option.map this.VisitIdent selfIdentifier, this.VisitPreXmlDoc(doc), range, trivia)
+                 this.VisitSynPat ctorArgs, Option.map this.VisitIdent selfIdentifier, this.VisitPreXmlDoc(doc), range, trivia)
         | SynMemberDefn.ImplicitInherit(inheritType, inheritArgs, inheritAlias, range) ->
             SynMemberDefn.ImplicitInherit
                 (this.VisitSynType inheritType, this.VisitSynExpr inheritArgs, Option.map this.VisitIdent inheritAlias,
@@ -384,8 +384,8 @@ type SyntaxVisitor() =
 
     default this.VisitSynValData(svd: SynValData): SynValData =
         match svd with
-        | SynValData(flags, svi, ident, transformedFromProperty) ->
-            SynValData(flags, this.VisitSynValInfo svi, Option.map this.VisitIdent ident, Option.map this.VisitIdent transformedFromProperty)
+        | SynValData(flags, svi, ident) ->
+            SynValData(flags, this.VisitSynValInfo svi, Option.map this.VisitIdent ident)
 
     abstract VisitSynValSig: SynValSig -> SynValSig
 
