@@ -28,25 +28,25 @@ type EnableAllTests() =
         match attr.ArgExpr with
         | SynExpr.Paren(expr, leftParenRange, rightParenRange, range) ->            
             match expr with
-            | SynExpr.App(flag, isInfix, funcExpr, argExpr, range) ->
-                match funcExpr with
-                | SynExpr.App(_, _, _, SynExpr.Ident(ident), _) ->
-                    if ident.idText = "Skip" then
-                        let noAttributesArgExpr = SynExpr.Const(SynConst.Unit, attr.ArgExpr.Range)
-                        base.VisitSynAttribute({ attr with ArgExpr = noAttributesArgExpr })
-                    else
-                        base.VisitSynAttribute(attr)
-                | _ -> base.VisitSynAttribute(attr)                
+            | SynExpr.App _ when  isSkipExpr(expr)  ->                
+                let noAttributesArgExpr = SynExpr.Const(SynConst.Unit, attr.ArgExpr.Range)
+                base.VisitSynAttribute({ attr with ArgExpr = noAttributesArgExpr })
+            | SynExpr.Tuple(iStruct, exprs, commaRanges, tplRange) ->
+                match List.tryFindIndex isSkipExpr exprs with
+                | Some index ->
+                    let newExpr =
+                        SynExpr.Paren(
+                            SynExpr.Tuple(
+                                iStruct,
+                                exprs |> List.removeAt index,
+                                commaRanges |> List.removeAt (index - 1), tplRange
+                        ),
+                        leftParenRange,
+                        rightParenRange,
+                        range)                
+                    base.VisitSynAttribute({ attr with ArgExpr = newExpr })
+                | None -> base.VisitSynAttribute(attr)
             | _ -> base.VisitSynAttribute(attr)
-            // () _ when isSkipExpr expr ->
-            //     let newExpr = SynExpr.Const(SynConst.Unit, attr.ArgExpr.Range) 
-            //     base.VisitSynAttribute({ attr with ArgExpr = newExpr })
-            // | SynExpr.Tuple(iStruct, exprs, commaRanges, tplRange) ->
-            //     let newExpr =
-            //         SynExpr.Paren(
-            //             SynExpr.Tuple(iStruct, exprs |> List.filter (isSkipExpr >> not), commaRanges, tplRange), leftParenRange, rightParenRange, range)                
-            //     base.VisitSynAttribute({ attr with ArgExpr = newExpr })
-            // | _ -> base.VisitSynAttribute(attr)
         | _ -> base.VisitSynAttribute(attr)
 
 let private parseFile (filePath: string) =
@@ -66,8 +66,7 @@ let private toCode tree =
     |> SourceText.ofString
 
 let private enableAllTests parsedInput =
-    parsedInput
-    // EnableAllTests().VisitInput(parsedInput)
+    EnableAllTests().VisitInput(parsedInput)
     
 let private rewriteProjectFile (context: TestRunContext) =
     let originalProjectFile = File.ReadAllText(context.ProjectFile)
