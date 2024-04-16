@@ -18,13 +18,6 @@ type RewriteResult =
 
 type EnableAllTests() =
     inherit SyntaxVisitor()
-    
-    default this.VisitSynAttributeList(attrs: SynAttributeList) : SynAttributeList =
-        base.VisitSynAttributeList(
-            { attrs with
-                Attributes =
-                  attrs.Attributes
-                  |> List.filter (fun attr -> attr.TypeName.LongIdent.Head.idText <> "Ignore") })
 
     override _.VisitSynAttribute(attr: SynAttribute) : SynAttribute =
         let isSkipExpr expr =
@@ -33,25 +26,35 @@ type EnableAllTests() =
             | _ -> false
         
         match attr.ArgExpr with
-        | SynExpr.Paren(expr, leftParenRange, rightParenRange, range) ->
+        | SynExpr.Paren(expr, leftParenRange, rightParenRange, range) ->            
             match expr with
-            | SynExpr.App _ when isSkipExpr expr ->
-                let newExpr = SynExpr.Const(SynConst.Unit, attr.ArgExpr.Range) 
-                base.VisitSynAttribute({ attr with ArgExpr = newExpr })
-            | SynExpr.Tuple(iStruct, exprs, commaRanges, tplRange) ->
-                let newExpr =
-                    SynExpr.Paren(
-                        SynExpr.Tuple(iStruct, exprs |> List.filter (isSkipExpr >> not), commaRanges, tplRange), leftParenRange, rightParenRange, range)                
-                base.VisitSynAttribute({ attr with ArgExpr = newExpr })
+            | SynExpr.App(flag, isInfix, funcExpr, argExpr, range) ->
+                match funcExpr with
+                | SynExpr.App(_, _, _, SynExpr.Ident(ident), _) ->
+                    if ident.idText = "Skip" then
+                        let noAttributesArgExpr = SynExpr.Const(SynConst.Unit, attr.ArgExpr.Range)
+                        base.VisitSynAttribute({ attr with ArgExpr = noAttributesArgExpr })
+                    else
+                        base.VisitSynAttribute(attr)
+                | _ -> base.VisitSynAttribute(attr)                
             | _ -> base.VisitSynAttribute(attr)
+            // () _ when isSkipExpr expr ->
+            //     let newExpr = SynExpr.Const(SynConst.Unit, attr.ArgExpr.Range) 
+            //     base.VisitSynAttribute({ attr with ArgExpr = newExpr })
+            // | SynExpr.Tuple(iStruct, exprs, commaRanges, tplRange) ->
+            //     let newExpr =
+            //         SynExpr.Paren(
+            //             SynExpr.Tuple(iStruct, exprs |> List.filter (isSkipExpr >> not), commaRanges, tplRange), leftParenRange, rightParenRange, range)                
+            //     base.VisitSynAttribute({ attr with ArgExpr = newExpr })
+            // | _ -> base.VisitSynAttribute(attr)
         | _ -> base.VisitSynAttribute(attr)
 
 let private parseFile (filePath: string) =
     if File.Exists(filePath) then
         let source = File.ReadAllText(filePath)
-        let sourceText = source |> SourceText.ofString
-        let tree, diagnostics = parseFile false sourceText []
-        Some tree // TODO: use diagnostics to determine success
+        let sourceText = source |> SourceText.ofString        
+        let tree, _ = CodeFormatter.ParseAsync(false, source) |> Async.RunSynchronously |> Array.head
+        Some tree
         |> Option.map (fun tree -> ParseSuccess(source, sourceText, tree))
         |> Option.defaultValue ParseError
     else
@@ -63,7 +66,8 @@ let private toCode tree =
     |> SourceText.ofString
 
 let private enableAllTests parsedInput =
-    EnableAllTests().VisitInput(parsedInput)
+    parsedInput
+    // EnableAllTests().VisitInput(parsedInput)
     
 let private rewriteProjectFile (context: TestRunContext) =
     let originalProjectFile = File.ReadAllText(context.ProjectFile)
