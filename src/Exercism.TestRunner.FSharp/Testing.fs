@@ -1,6 +1,5 @@
 module Exercism.TestRunner.FSharp.Testing
 
-open System
 open System.Diagnostics
 open System.IO
 open System.Text.RegularExpressions
@@ -8,8 +7,8 @@ open System.Xml.Serialization
 open Exercism.TestRunner.FSharp.Core
 open Exercism.TestRunner.FSharp.Rewrite
 open Exercism.TestRunner.FSharp.Visitor
-open FSharp.Compiler.Syntax
-open FSharp.Compiler.Text
+open Fantomas.FCS.Syntax
+open Fantomas.FCS.Text
 
 module String =
     let normalize (str: string) = str.Replace("\r\n", "\n").Trim()
@@ -17,7 +16,7 @@ module String =
     let isNullOrWhiteSpace = System.String.IsNullOrWhiteSpace
 
 module Process =
-    let exec fileName arguments workingDirectory =
+    let exec (fileName: string) (arguments: string) workingDirectory =
         let psi = ProcessStartInfo(fileName, arguments)
         psi.WorkingDirectory <- workingDirectory
         psi.RedirectStandardInput <- true
@@ -257,7 +256,9 @@ module DotnetCli =
 
     let runTests originalTestCode originalTestTree context =
         let solutionDir = Path.GetDirectoryName(context.TestsFile)
-        Process.exec "dotnet" $"test --verbosity=quiet --logger \"trx;LogFileName=%s{Path.GetFileName(context.TestResultsFile)}\" /flp:v=q" solutionDir
+
+        Process.exec "dotnet" "restore --source /root/.nuget/packages/" solutionDir
+        Process.exec "dotnet" $"test --no-restore --verbosity=quiet --logger \"trx;LogFileName=%s{Path.GetFileName(context.TestResultsFile)}\" /flp:v=q" solutionDir
 
         let buildErrors = parseBuildErrors context
 

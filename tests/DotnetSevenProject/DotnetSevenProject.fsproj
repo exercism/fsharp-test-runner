@@ -1,14 +1,14 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
+    <TargetFramework>net7.0</TargetFramework>
     
     <IsPackable>false</IsPackable>
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="MultipleTestsWithSingleFail.fs" />
-    <Compile Include="MultipleTestsWithSingleFailTests.fs" />
+    <Compile Include="DotnetSevenProject.fs" />
+    <Compile Include="DotnetSevenProjectTests.fs" />
   </ItemGroup>
 
   <ItemGroup>
