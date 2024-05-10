@@ -21,6 +21,7 @@ RUN dotnet add package FSharp.Core -v 6.0.1
 RUN dotnet add package FSharp.Core -v 7.0.400
 RUN dotnet add package FSharp.Core -v 8.0.101
 RUN dotnet add package FParsec -v 1.1.1
+RUN dotnet add package FsToolkit.ErrorHandling -v 4.15.2
 
 WORKDIR /app
 
