@@ -38,7 +38,7 @@ FROM mcr.microsoft.com/dotnet/sdk:8.0.201-alpine3.19-amd64 AS runtime
 WORKDIR /opt/test-runner
 
 # Enable rolling forward the .NET SDK used to be backwards-compatible
-ENV DOTNET_ROLL_FORWARD Major
+ENV DOTNET_ROLL_FORWARD=Major
 
 COPY --from=build /root/.nuget/packages/ /root/.nuget/packages/
 COPY --from=build /opt/test-runner/ .
