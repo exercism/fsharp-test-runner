@@ -1,4 +1,5 @@
-FROM mcr.microsoft.com/dotnet/sdk:8.0.201-alpine3.19-amd64 AS build
+FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+ARG TARGETARCH
 
 WORKDIR /tmp
 
@@ -27,18 +28,21 @@ WORKDIR /app
 
 # Copy fsproj and restore as distinct layers
 COPY src/Exercism.TestRunner.FSharp/Exercism.TestRunner.FSharp.fsproj ./
-RUN dotnet restore -r linux-musl-x64
+RUN dotnet restore -a $TARGETARCH
 
 # Copy everything else and build
 COPY src/Exercism.TestRunner.FSharp/ ./
-RUN dotnet publish -r linux-musl-x64 -c Release -o /opt/test-runner --no-restore
+RUN dotnet publish -a $TARGETARCH -c Release -o /opt/test-runner --no-restore
 
 # Build runtime image
-FROM mcr.microsoft.com/dotnet/sdk:8.0.201-alpine3.19-amd64 AS runtime
-WORKDIR /opt/test-runner
+FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/sdk:8.0 AS runtime
 
-# Enable rolling forward the .NET SDK used to be backwards-compatible
+ENV DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=false
 ENV DOTNET_ROLL_FORWARD=Major
+ENV DOTNET_NOLOGO=true
+ENV DOTNET_CLI_TELEMETRY_OPTOUT=true
+
+WORKDIR /opt/test-runner
 
 COPY --from=build /root/.nuget/packages/ /root/.nuget/packages/
 COPY --from=build /opt/test-runner/ .
