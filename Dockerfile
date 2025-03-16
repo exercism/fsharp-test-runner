@@ -1,4 +1,4 @@
-FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/sdk:9.0 AS build
 ARG TARGETARCH
 
 WORKDIR /tmp
@@ -22,6 +22,7 @@ RUN dotnet add package FSharp.Core -v 6.0.1
 RUN dotnet add package FSharp.Core -v 7.0.400
 RUN dotnet add package FSharp.Core -v 8.0.101
 RUN dotnet add package FSharp.Core -v 8.0.403
+RUN dotnet add package FSharp.Core -v 9.0.201
 RUN dotnet add package FParsec -v 1.1.1
 RUN dotnet add package FsToolkit.ErrorHandling -v 4.15.2
 
@@ -36,7 +37,7 @@ COPY src/Exercism.TestRunner.FSharp/ ./
 RUN dotnet publish -a $TARGETARCH -c Release -o /opt/test-runner --no-restore
 
 # Build runtime image
-FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/sdk:8.0 AS runtime
+FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/sdk:9.0 AS runtime
 
 ENV DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=false
 ENV DOTNET_ROLL_FORWARD=Major
