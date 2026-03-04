@@ -18,11 +18,8 @@ RUN dotnet add package FakeItEasy -v 6.2.1
 RUN dotnet add package FsCheck -v 2.14.3
 RUN dotnet add package FsCheck -v 2.16.3
 RUN dotnet add package FsCheck.Xunit -v 2.14.3
-RUN dotnet add package FSharp.Core -v 6.0.1
-RUN dotnet add package FSharp.Core -v 7.0.400
-RUN dotnet add package FSharp.Core -v 8.0.101
-RUN dotnet add package FSharp.Core -v 8.0.403
 RUN dotnet add package FSharp.Core -v 9.0.201
+RUN dotnet add package FSharp.Core -v 10.0.103
 RUN dotnet add package FParsec -v 1.1.1
 RUN dotnet add package FsToolkit.ErrorHandling -v 4.15.2
 
