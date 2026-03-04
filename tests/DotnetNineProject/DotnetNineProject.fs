@@ -1,4 +1,4 @@
-module DotnetFiveProject
+module DotnetNineProject
 
 let add x y = x + y
 
