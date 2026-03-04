@@ -1,4 +1,4 @@
-FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/sdk:9.0 AS build
+FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/sdk:10.0.103-alpine3.23 AS build
 ARG TARGETARCH
 
 WORKDIR /tmp
@@ -37,7 +37,7 @@ COPY src/Exercism.TestRunner.FSharp/ ./
 RUN dotnet publish -a $TARGETARCH -c Release -o /opt/test-runner --no-restore
 
 # Build runtime image
-FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/sdk:9.0 AS runtime
+FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/sdk:10.0.103-alpine3.23 AS runtime
 
 ENV DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=false
 ENV DOTNET_ROLL_FORWARD=Major
