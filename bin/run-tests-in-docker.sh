@@ -20,7 +20,6 @@ docker build --rm -t exercism/fsharp-test-runner .
 docker run \
     --rm \
     --network none \
-    --read-only \
     --mount type=bind,src="${PWD}/tests",dst=/opt/test-runner/tests \
     --mount type=bind,src="${PWD}/bin/run-tests.sh",dst=/opt/test-runner/bin/run-tests.sh \
     --mount type=tmpfs,dst=/tmp \
