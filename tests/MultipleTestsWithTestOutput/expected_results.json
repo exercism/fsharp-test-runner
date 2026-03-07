@@ -10,7 +10,7 @@
     {
       "name": "Sub should subtract numbers",
       "status": "fail",
-      "message": "Expected: Equals 4\nActual:   22",
+      "message": "Assert.Equal() Failure: Values differ\nExpected: \u0022Equals 4\u0022\nActual:   \u002222\u0022",
       "test_code": "sub 7 3 |\u003E should equal 4"
     },
     {

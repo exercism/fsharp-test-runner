@@ -5,7 +5,7 @@
     {
       "name": "Add should add numbers",
       "status": "fail",
-      "message": "Expected: Equals 3\nActual:   2",
+      "message": "Assert.Equal() Failure: Values differ\nExpected: \u0022Equals 3\u0022\nActual:   \u00222\u0022",
       "test_code": "add 1 1 |\u003E should equal 3"
     }
   ]
