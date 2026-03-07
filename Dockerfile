@@ -51,6 +51,6 @@ WORKDIR /opt/test-runner
 
 COPY --from=build /root/.nuget/packages/ /root/.nuget/packages/
 COPY --from=build /opt/test-runner/ .
-COPY bin/ bin/
+COPY bin/run.sh bin/run.sh
 
 ENTRYPOINT ["sh", "/opt/test-runner/bin/run.sh"]
