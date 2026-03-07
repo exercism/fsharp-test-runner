@@ -43,3 +43,13 @@ let ``Letter should be uppercase`` (letter) = Char.IsUpper(letter) |> should equ
 [<Property(Skip = "Remove this Skip property to run this test")>]
 let ``Div should divide numbers`` (x) : Property =
     Prop.throws<DivideByZeroException, int> (new Lazy<int>(fun () -> x / 0))
+
+type ClassBasedTests() =
+    [<Fact>]
+    member _.``Add should add numbers``() = add 1 1 |> should equal 2
+
+    [<Fact>]
+    member _.``Sub should subtract numbers``() = sub 7 3 |> should equal 4
+
+    [<Fact>]
+    member _.``Mul should multiply numbers``() = mul 2 3 |> should equal 6
