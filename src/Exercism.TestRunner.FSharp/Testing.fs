@@ -237,7 +237,7 @@ module DotnetCli =
             else
                 error.[lastPathIndex + 1..]
 
-    let private removeProjectReference (error: string) = error.[0..(error.LastIndexOf('[') - 1)]
+    let private removeProjectReference (error: string) = error[.. error.LastIndexOf('[') - 1]
 
     let private normalizeBuildError error =
         error

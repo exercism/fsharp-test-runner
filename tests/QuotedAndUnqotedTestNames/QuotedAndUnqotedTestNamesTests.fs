@@ -1,9 +1,9 @@
-module QuotedAndUnquotedTestsTests
+module QuotedAndUnqotedTestNamesTests
 
 open Xunit
 open FsUnit.Xunit
 open Exercism.Tests
-open QuotedAndUnquotedTests
+open QuotedAndUnqotedTestNames
 
 [<Fact>]
 let ``Add should add numbers`` () = add 1 1 |> should equal 2

@@ -7,8 +7,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="QuotedAndUnquotedTests.fs" />
-    <Compile Include="QuotedAndUnquotedTestsTests.fs" />
+    <Compile Include="QuotedAndUnqotedTestNames.fs" />
+    <Compile Include="QuotedAndUnqotedTestNamesTests.fs" />
   </ItemGroup>
 
   <ItemGroup>

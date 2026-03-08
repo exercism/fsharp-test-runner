@@ -1,4 +1,4 @@
-module QuotedAndUnquotedTests
+module QuotedAndUnqotedTestNames
 
 let add x y = x + y
 
