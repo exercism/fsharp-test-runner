@@ -6,8 +6,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="DotnetNineProject.fs" />
-    <Compile Include="DotnetNineProjectTests.fs" />
+    <Compile Include="DotnetNine.fs" />
+    <Compile Include="DotnetNineTests.fs" />
   </ItemGroup>
 
   <ItemGroup>

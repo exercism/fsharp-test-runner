@@ -70,7 +70,12 @@ let private enableAllTests parsedInput =
     
 let private rewriteProjectFile (context: TestRunContext) =
     let originalProjectFile = File.ReadAllText(context.ProjectFile)
-    let rewrittenProjectFile = originalProjectFile.Replace("net9.0", "net10.0")
+    let rewrittenProjectFile =
+        if originalProjectFile.Contains("<RootNamespace>") then
+            originalProjectFile.Replace("net9.0", "net10.0")
+        else
+            originalProjectFile.Replace("net9.0", "net10.0")
+                               .Replace("</PropertyGroup>", "<RootNamespace>Exercism</RootNamespace>\n  </PropertyGroup>")
     originalProjectFile, rewrittenProjectFile
 
 let rewriteTests (context: TestRunContext) =
