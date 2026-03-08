@@ -2,11 +2,12 @@ module DifferentTypesOfTestsTests
 
 open System
 open System.Threading.Tasks
+
+open FsCheck.FSharp
 open Xunit
 open FsUnit.Xunit
 open FsCheck
 open FsCheck.Xunit
-open Exercism.Tests
 open DifferentTypesOfTests
 
 type CustomPropertyAttribute() =
@@ -14,8 +15,9 @@ type CustomPropertyAttribute() =
 
 type Letters =
     static member Chars () =
-        Arb.Default.Char()
-        |> Arb.filter (fun c -> 'A' <= c && c <= 'Z')    
+        ArbMap.defaults
+        |> ArbMap.arbitrary<char>
+        |> Arb.mapFilter id (fun c -> 'A' <= c && c <= 'Z')
 
 type LetterAttribute () =
     inherit PropertyAttribute(Arbitrary = [| typeof<Letters> |])
