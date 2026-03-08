@@ -7,8 +7,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="MultipleCompileErrors.fs" />
-    <Compile Include="MultipleCompileErrorsTests.fs" />
+    <Compile Include="CompileErrors.fs" />
+    <Compile Include="CompileErrorsTests.fs" />
   </ItemGroup>
 
   <ItemGroup>
