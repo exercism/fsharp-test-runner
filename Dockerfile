@@ -21,7 +21,7 @@ RUN dotnet add package Aether --version 8.3.1
 RUN dotnet add package BenchmarkDotNet --version 0.12.1
 RUN dotnet add package FakeItEasy --version 6.2.1
 RUN dotnet add package FsCheck --version 2.14.3
-RUN dotnet add package FsCheck --version 2.16.3
+RUN dotnet add package FsCheck --version 3.3.2
 RUN dotnet add package FsCheck.Xunit --version 2.14.3
 RUN dotnet add package FsCheck.Xunit.v3 --version 3.3.2
 RUN dotnet add package FSharp.Core --version 9.0.201
