@@ -348,7 +348,7 @@ type SyntaxVisitor() =
         | SynMemberDefn.AutoProperty(attrs, isStatic, ident, typeOpt, propKind, flags, flagsForSet, doc, access, synExpr, range, trivia) ->
             SynMemberDefn.AutoProperty
                 (attrs |> List.map this.VisitSynAttributeList, isStatic, this.VisitIdent ident,
-                 Option.map this.VisitSynType typeOpt, propKind, flags, flagsForSet, this.VisitPreXmlDoc(doc), Option.map this.VisitSynAccess access,
+                 Option.map this.VisitSynType typeOpt, propKind, flags, flagsForSet, this.VisitPreXmlDoc(doc), this.VisitSynValSigAccess access,
                  this.VisitSynExpr synExpr, range, trivia)
 
     abstract VisitSynSimplePat: SynSimplePat -> SynSimplePat
@@ -395,7 +395,7 @@ type SyntaxVisitor() =
             SynValSig
                 (attrs |> List.map this.VisitSynAttributeList, this.VisitSynIdent ident,
                  this.VisitSynValTyparDecls explicitValDecls, this.VisitSynType synType, this.VisitSynValInfo arity,
-                 isInline, isMutable, this.VisitPreXmlDoc(doc), Option.map this.VisitSynAccess access, Option.map this.VisitSynExpr expr,
+                 isInline, isMutable, this.VisitPreXmlDoc(doc), this.VisitSynValSigAccess access, Option.map this.VisitSynExpr expr,
                  range, trivia)
 
     abstract VisitSynValTyparDecls: SynValTyparDecls -> SynValTyparDecls
@@ -632,6 +632,8 @@ type SyntaxVisitor() =
             SynType.SignatureParameter(List.map this.VisitSynAttributeList synAttributeLists, optional, Option.map this.VisitIdent identOption, this.VisitSynType usedType, range)
         | SynType.FromParseError range -> SynType.FromParseError range
         | SynType.Intersection(typar, types, range, trivia) -> SynType.Intersection(Option.map this.VisitSynTypar typar, types |> List.map this.VisitSynType, range, trivia)
+        | SynType.StaticConstantNull range -> SynType.StaticConstantNull range
+        | SynType.WithNull(innerType, ambivalent, range, trivia) -> SynType.WithNull(this.VisitSynType(innerType), ambivalent, range, trivia)
 
     abstract VisitSynTypeOrTrivia: SynTypeOrTrivia -> SynTypeOrTrivia
     default this.VisitSynTypeOrTrivia(synTypeOrTrivia: SynTypeOrTrivia): SynTypeOrTrivia = synTypeOrTrivia
@@ -664,6 +666,10 @@ type SyntaxVisitor() =
     abstract VisitSynAccess: SynAccess -> SynAccess
 
     default this.VisitSynAccess(a: SynAccess): SynAccess = a
+    
+    abstract VisitSynValSigAccess: SynValSigAccess -> SynValSigAccess
+    
+    default this.VisitSynValSigAccess(a: SynValSigAccess): SynValSigAccess = a
 
     abstract VisitSynBindingKind: SynBindingKind -> SynBindingKind
 

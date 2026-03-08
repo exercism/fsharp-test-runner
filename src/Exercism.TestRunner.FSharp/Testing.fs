@@ -237,7 +237,7 @@ module DotnetCli =
             else
                 error.[lastPathIndex + 1..]
 
-    let private removeProjectReference (error: string) = error.[0..(error.LastIndexOf('[') - 1)]
+    let private removeProjectReference (error: string) = error[.. error.LastIndexOf('[') - 1]
 
     let private normalizeBuildError error =
         error
@@ -258,7 +258,7 @@ module DotnetCli =
         let solutionDir = Path.GetDirectoryName(context.TestsFile)
 
         Process.exec "dotnet" "restore --source /root/.nuget/packages/" solutionDir
-        Process.exec "dotnet" $"test --no-restore --verbosity=quiet --logger \"trx;LogFileName=%s{Path.GetFileName(context.TestResultsFile)}\" /flp:verbosity=quiet;errorsOnly=true" solutionDir
+        Process.exec "dotnet" $"test -c release --no-restore --verbosity=quiet --logger \"trx;LogFileName={Path.GetFileName(context.TestResultsFile)}\" /flp:verbosity=quiet;errorsOnly=true" solutionDir            
 
         let buildErrors = parseBuildErrors context
 
