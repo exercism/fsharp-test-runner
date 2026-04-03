@@ -23,7 +23,7 @@
     <PackageReference Include="Fantomas.Core" Version="7.0.5" />
     <PackageReference Include="Fantomas.FCS" Version="7.0.5" />
     <PackageReference Include="Humanizer.Core" Version="3.0.10" />
-    <PackageReference Update="FSharp.Core" Version="10.0.103" />
+    <PackageReference Update="FSharp.Core" Version="10.1.201" />
   </ItemGroup>
 
 </Project>
