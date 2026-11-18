@@ -29,6 +29,14 @@ RUN dotnet add package FSharp.Core --version 10.0.103
 RUN dotnet add package FParsec --version 1.1.1
 RUN dotnet add package FsToolkit.ErrorHandling --version 4.15.2
 
+# Student projects reference the FSharp.Core version bundled with the SDK
+# without naming it. If that version is missing from the package cache, each
+# run will restore it from the SDK's library-packs folder and verify its
+# signature. With no network, the revocation checks in that verification wait
+# about 40 s on failed DNS lookups, so every run times out. Restoring an F#
+# project here caches the bundled version, so runs find it already installed.
+RUN dotnet new console -lang "F#" -o /tmp/fsharp-core && dotnet restore /tmp/fsharp-core
+
 WORKDIR /app
 
 # Copy fsproj and restore as distinct layers
