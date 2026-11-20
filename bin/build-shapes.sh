@@ -11,33 +11,29 @@
 #   runner replaces with the solution's root namespace.
 # - out/: the build output with every dependency, apart from the template's own assembly.
 # If a shape fails to build, this script removes it, and solutions with that shape use MSBuild.
+#
+# Every template compiles the two placeholder source files in shapes/, and uses
+# shapes/Directory.Build.targets, which writes fsc.rsp.
 
 for dir in /opt/test-runner/shapes/*/; do
     cd "${dir}" || exit 1
-    printf 'module ExercismShape\n\nlet value = 1\n' > ExercismShape.fs
-    printf 'module ExercismShapeTests\n\nopen Xunit\n\n[<Fact>]\nlet ``Passes`` () = ()\n' > ExercismShapeTests.fs
-    # This target writes the compiler arguments to fsc.rsp after MSBuild has compiled the project.
-    cat > Directory.Build.targets <<'TARGETS'
-<Project>
-  <Target Name="ExercismCaptureCompilerArguments" AfterTargets="CoreCompile">
-    <WriteLinesToFile File="$(MSBuildProjectDirectory)/fsc.rsp" Lines="@(FscCommandLineArgs)" Overwrite="true" />
-  </Target>
-</Project>
-TARGETS
-
-    if dotnet build -c release --source /root/.nuget/packages/ -p:ProvideCommandLineArgs=true -p:RootNamespace=ExercismRootNamespace -nologo -v q &&
+    if dotnet build --configuration release --source /root/.nuget/packages/ --property:ProvideCommandLineArgs=true \
+           --property:RootNamespace=ExercismRootNamespace --nologo --verbosity quiet &&
        [ -s fsc.rsp ] && grep -q '^--flaterrors$' fsc.rsp && grep -q '^--fullpaths$' fsc.rsp; then
         ls /usr/share/dotnet/sdk/*/FSharp/fsc.dll > fsc.path
         mv bin/release/net10.0 out
         rm -f out/ExercismShape out/ExercismShape.dll out/ExercismShape.pdb
         find obj -type f ! -name '*.fs' -delete
-        rm -rf bin Directory.Build.targets
+        rm -rf bin
         echo "Built shape ${dir}"
     else
         echo "Skipping shape ${dir}"
         rm -rf "${dir}"
     fi
 done
+
+# The shared template files are only needed for the builds above.
+rm /opt/test-runner/shapes/Directory.Build.targets /opt/test-runner/shapes/ExercismShape.fs /opt/test-runner/shapes/ExercismShapeTests.fs
 
 # Many shapes share the same dependency files. Hard links keep one copy of each in the image.
 find /opt/test-runner/shapes -type f -path '*/out/*' -exec sha256sum {} + | sort | awk '

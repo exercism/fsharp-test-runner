@@ -4,8 +4,8 @@
     <IsPackable>false</IsPackable>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="ExercismShape.fs" />
-    <Compile Include="ExercismShapeTests.fs" />
+    <Compile Include="../ExercismShape.fs" />
+    <Compile Include="../ExercismShapeTests.fs" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="FsUnit.xUnit" Version="7.1.1" />

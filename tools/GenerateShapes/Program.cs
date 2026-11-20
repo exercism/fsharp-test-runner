@@ -110,11 +110,12 @@ Node Key(string text)
 }
 
 // Keeps the project file as it is, with the Compile items replaced by the template's two files and no RootNamespace.
+// The two files are shared by every template, so they sit in the shapes/ folder itself.
 static string Template(string text)
 {
     text = text.TrimStart('﻿').Replace("net9.0", "net10.0");
     text = new Regex("""(\s*<Compile Include="[^"]*" />)+""").Replace(text,
-        "\n    <Compile Include=\"ExercismShape.fs\" />\n    <Compile Include=\"ExercismShapeTests.fs\" />", 1);
+        "\n    <Compile Include=\"../ExercismShape.fs\" />\n    <Compile Include=\"../ExercismShapeTests.fs\" />", 1);
     return Regex.Replace(text, @"\s*<RootNamespace>[^<]*</RootNamespace>", "");
 }
 

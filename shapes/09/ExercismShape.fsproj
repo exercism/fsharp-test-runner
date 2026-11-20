@@ -7,8 +7,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="ExercismShape.fs" />
-    <Compile Include="ExercismShapeTests.fs" />
+    <Compile Include="../ExercismShape.fs" />
+    <Compile Include="../ExercismShapeTests.fs" />
   </ItemGroup>
 
   <ItemGroup>
