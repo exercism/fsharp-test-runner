@@ -40,14 +40,13 @@ RUN dotnet new console -lang "F#" -o /tmp/fsharp-core && dotnet restore /tmp/fsh
 WORKDIR /app
 
 # Copy fsproj and restore as distinct layers.
-# The runner is published with ReadyToRun, so its code (mostly the F# parser in
-# Fantomas.FCS) is precompiled and doesn't go through the JIT on every run.
+# The project file sets PublishReadyToRun, so the restore also fetches what ReadyToRun needs.
 COPY src/Exercism.TestRunner.FSharp/Exercism.TestRunner.FSharp.fsproj ./
-RUN dotnet restore -a $TARGETARCH -p:PublishReadyToRun=true
+RUN dotnet restore --arch $TARGETARCH
 
 # Copy everything else and build
 COPY src/Exercism.TestRunner.FSharp/ ./
-RUN dotnet publish -a $TARGETARCH -c Release -o /opt/test-runner --no-restore -p:PublishReadyToRun=true
+RUN dotnet publish --arch $TARGETARCH --configuration Release --output /opt/test-runner --no-restore
 
 # ReadyToRun needs the runtime packs and the ReadyToRun compiler, which only the
 # runner's own build uses. Removing them keeps them out of the runtime image.
