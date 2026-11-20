@@ -1,0 +1,8 @@
+<Project>
+  <!-- MSBuild imports this file into every template project in the shapes/ folder (see bin/build-shapes.sh). -->
+
+  <!-- This target writes the compiler arguments to fsc.rsp after MSBuild has compiled the project. -->
+  <Target Name="ExercismCaptureCompilerArguments" AfterTargets="CoreCompile">
+    <WriteLinesToFile File="$(MSBuildProjectDirectory)/fsc.rsp" Lines="@(FscCommandLineArgs)" Overwrite="true" />
+  </Target>
+</Project>

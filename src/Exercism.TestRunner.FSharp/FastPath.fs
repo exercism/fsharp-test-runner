@@ -187,7 +187,8 @@ let private prepareRunDirectory shapeDirectory projectName =
 // files replace the template's two source files, the generated files are copied with the project name
 // filled in, and the output goes to the run folder.
 let private compilerArguments shapeDirectory runDirectory projectName rootNamespace (files: string list) =
-    let templateFiles = set [ $"{Token}.fs"; $"{Token}Tests.fs" ]
+    // The template's two source files sit in the shapes folder, next to the shape's own folder.
+    let templateFiles = set [ $"../{Token}.fs"; $"../{Token}Tests.fs" ]
     let mutable solutionFilesAdded = false
 
     File.ReadAllLines(Path.Combine(shapeDirectory, "fsc.rsp"))

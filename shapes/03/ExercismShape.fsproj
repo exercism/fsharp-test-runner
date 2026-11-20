@@ -6,8 +6,8 @@
     <IsTestProject>true</IsTestProject>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="ExercismShape.fs" />
-    <Compile Include="ExercismShapeTests.fs" />
+    <Compile Include="../ExercismShape.fs" />
+    <Compile Include="../ExercismShapeTests.fs" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Exercism.Tests.xunit.v3" Version="0.1.0-beta1" />
