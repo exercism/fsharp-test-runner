@@ -95,7 +95,7 @@ module TestResults =
 
     // The xUnit test executable escapes some characters in test names and failure
     // messages with a backslash, such as \" for a quote and \x01 for other control
-    // characters. `dotnet test` reports the original text, so this turns them back.
+    // characters. This turns them back into the original characters.
     let private escapedCharacter = Regex(@"\\(x[01][0-9a-f]|.)", RegexOptions.Compiled)
 
     let private unescape (message: string) =
@@ -113,7 +113,7 @@ module TestResults =
             | hex when hex.Length = 3 -> string (char (System.Convert.ToInt32(hex.[1..], 16)))
             | _ -> m.Value)
 
-    let private toMessage unescapeText (xmlUnitTestResult: XmlUnitTestResult) =
+    let private toMessage (xmlUnitTestResult: XmlUnitTestResult) =
         let removeFsUnitExceptionFromMessage (message: string) =
             message.Replace(
                 "FsUnit.Xunit+MatchException : Exception of type 'FsUnit.Xunit+MatchException' was thrown.",
@@ -124,7 +124,7 @@ module TestResults =
         |> Option.ofObj
         |> Option.bind (fun output -> output.ErrorInfo |> Option.ofObj)
         |> Option.bind (fun errorInfo -> errorInfo.Message |> Option.ofObj)
-        |> Option.map (if unescapeText then unescape else id)
+        |> Option.map unescape
         |> Option.map removeFsUnitExceptionFromMessage
         |> Option.map String.normalize
 
@@ -214,28 +214,27 @@ module TestResults =
         
     let private toLine ((SynBinding (_, _, _, _, _, _, _, _, _, _, range, _, _)): SynBinding) = range.StartLine
 
-    let private toTestResult unescapeText originalTestCode originalTestTree (xmlUnitTestResult: XmlUnitTestResult) =
+    let private toTestResult originalTestCode originalTestTree (xmlUnitTestResult: XmlUnitTestResult) =
         let testMethodBinding = findTestMethodBinding originalTestTree xmlUnitTestResult
         
         { Name = xmlUnitTestResult |> toName
           Status = xmlUnitTestResult |> toStatus
-          Message = xmlUnitTestResult |> toMessage unescapeText
+          Message = xmlUnitTestResult |> toMessage
           Output = xmlUnitTestResult |> toOutput
           TaskId = testMethodBinding |> toTaskId
           TestCode = testMethodBinding |> (toTestCode originalTestCode)
           Line = testMethodBinding |> toLine }
 
-    let private toTestResults unescapeText originalTestCode originalTestTree (xmlUnitTestResults: XmlUnitTestResult []) =
-        if unescapeText then
-            for xmlUnitTestResult in xmlUnitTestResults do
-                xmlUnitTestResult.TestName <- unescape xmlUnitTestResult.TestName
+    let private toTestResults originalTestCode originalTestTree (xmlUnitTestResults: XmlUnitTestResult []) =
+        for xmlUnitTestResult in xmlUnitTestResults do
+            xmlUnitTestResult.TestName <- unescape xmlUnitTestResult.TestName
 
         xmlUnitTestResults
-        |> Seq.map (toTestResult unescapeText originalTestCode originalTestTree)
+        |> Seq.map (toTestResult originalTestCode originalTestTree)
         |> Seq.sortBy (fun testResult -> testResult.Line)
         |> Seq.toArray
 
-    let parse unescapeText originalTestCode originalTestTree context =
+    let parse originalTestCode originalTestTree context =
         use fileStream = File.OpenRead(context.TestResultsFile)
 
         let result =
@@ -246,7 +245,7 @@ module TestResults =
         result.Results
         |> Option.ofObj
         |> Option.bind (fun results -> results.UnitTestResult |> Option.ofObj)
-        |> Option.map (toTestResults unescapeText originalTestCode originalTestTree)
+        |> Option.map (toTestResults originalTestCode originalTestTree)
         |> Option.defaultValue Array.empty
 
 module DotnetCli =
@@ -287,27 +286,24 @@ module DotnetCli =
         let solutionDir = Path.GetDirectoryName(context.TestsFile)
 
         Process.exec "dotnet" "restore --source /root/.nuget/packages/" solutionDir
-        Process.exec "dotnet" "build -c release --no-restore --verbosity=quiet /flp:verbosity=quiet;errorsOnly=true" solutionDir
+        Process.exec "dotnet" "build --configuration release --no-restore --verbosity quiet /flp:verbosity=quiet;errorsOnly=true" solutionDir
 
         let buildErrors = parseBuildErrors context
 
         if Array.isEmpty buildErrors then
-            // xUnit v3 test projects build to an executable that runs the tests
-            // itself. Running it directly skips `dotnet test`, which spends
-            // about 3 s starting MSBuild and the VSTest host for every run.
+            // Every exercise uses xUnit v3, so the project builds to an executable
+            // that runs the tests itself. Running it directly skips `dotnet test`,
+            // which spends about 3 s starting MSBuild and the VSTest host for every run.
             let assembly =
                 Path.Combine(solutionDir, "bin", "release", "net10.0", Path.GetFileNameWithoutExtension(context.ProjectFile) + ".dll")
 
-            if File.Exists(assembly) then
-                Process.exec "dotnet" $"\"{assembly}\" -noLogo -noColor -trx \"{context.TestResultsFile}\"" solutionDir
+            Process.exec "dotnet" $"\"{assembly}\" -noLogo -noColor -trx \"{context.TestResultsFile}\"" solutionDir
 
-            if File.Exists(context.TestResultsFile) then
-                TestRunSuccess(TestResults.parse true originalTestCode originalTestTree context)
-            else
-                // Older projects (such as xUnit v2) don't build to a test executable,
-                // so no results file appears. Those still run through `dotnet test`.
-                Process.exec "dotnet" $"test -c release --no-build --verbosity=quiet --logger \"trx;LogFileName={Path.GetFileName(context.TestResultsFile)}\"" solutionDir
-                TestRunSuccess(TestResults.parse false originalTestCode originalTestTree context)
+            try
+                TestRunSuccess(TestResults.parse originalTestCode originalTestTree context)
+            with error ->
+                // For example, the test executable crashed before writing its results.
+                TestRunError [| error.Message |]
         else
             TestRunError buildErrors
 
