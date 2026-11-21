@@ -23,7 +23,13 @@ module Process =
         psi.RedirectStandardError <- true
         psi.RedirectStandardOutput <- true
         use p = Process.Start(psi)
+        // Read both streams to the end, so a child that writes a lot of output
+        // can't fill the pipe and block.
+        let stdout = p.StandardOutput.ReadToEndAsync()
+        let stderr = p.StandardError.ReadToEndAsync()
         p.WaitForExit()
+        stdout.Wait()
+        stderr.Wait()
 
 module TestResults =
     [<AllowNullLiteral>]
@@ -87,6 +93,26 @@ module TestResults =
         | "Failed" -> TestStatus.Fail
         | _ -> TestStatus.Error
 
+    // The xUnit test executable escapes some characters in test names and failure
+    // messages with a backslash, such as \" for a quote and \x01 for other control
+    // characters. This turns them back into the original characters.
+    let private escapedCharacter = Regex(@"\\(x[01][0-9a-f]|.)", RegexOptions.Compiled)
+
+    let private unescape (message: string) =
+        escapedCharacter.Replace(message, fun m ->
+            match m.Groups.[1].Value with
+            | "n" -> "\n"
+            | "r" -> "\r"
+            | "t" -> "\t"
+            | "0" -> "\000"
+            | "a" -> "\a"
+            | "b" -> "\b"
+            | "f" -> "\f"
+            | "v" -> "\v"
+            | "\\" | "\"" as c -> c
+            | hex when hex.Length = 3 -> string (char (System.Convert.ToInt32(hex.[1..], 16)))
+            | _ -> m.Value)
+
     let private toMessage (xmlUnitTestResult: XmlUnitTestResult) =
         let removeFsUnitExceptionFromMessage (message: string) =
             message.Replace(
@@ -98,6 +124,7 @@ module TestResults =
         |> Option.ofObj
         |> Option.bind (fun output -> output.ErrorInfo |> Option.ofObj)
         |> Option.bind (fun errorInfo -> errorInfo.Message |> Option.ofObj)
+        |> Option.map unescape
         |> Option.map removeFsUnitExceptionFromMessage
         |> Option.map String.normalize
 
@@ -198,7 +225,10 @@ module TestResults =
           TestCode = testMethodBinding |> (toTestCode originalTestCode)
           Line = testMethodBinding |> toLine }
 
-    let private toTestResults originalTestCode originalTestTree xmlUnitTestResults =
+    let private toTestResults originalTestCode originalTestTree (xmlUnitTestResults: XmlUnitTestResult []) =
+        for xmlUnitTestResult in xmlUnitTestResults do
+            xmlUnitTestResult.TestName <- unescape xmlUnitTestResult.TestName
+
         xmlUnitTestResults
         |> Seq.map (toTestResult originalTestCode originalTestTree)
         |> Seq.sortBy (fun testResult -> testResult.Line)
@@ -251,19 +281,29 @@ module DotnetCli =
         |> Seq.filter (fun logLine -> logLine |> String.isNullOrWhiteSpace |> not)
         |> Seq.toArray
 
-    let private parseTestResults originalTestCode originalTestTree context =
-        TestResults.parse originalTestCode originalTestTree context
 
     let runTests originalTestCode originalTestTree context =
         let solutionDir = Path.GetDirectoryName(context.TestsFile)
 
         Process.exec "dotnet" "restore --source /root/.nuget/packages/" solutionDir
-        Process.exec "dotnet" $"test -c release --no-restore --verbosity=quiet --logger \"trx;LogFileName={Path.GetFileName(context.TestResultsFile)}\" /flp:verbosity=quiet;errorsOnly=true" solutionDir            
+        Process.exec "dotnet" "build --configuration release --no-restore --verbosity quiet /flp:verbosity=quiet;errorsOnly=true" solutionDir
 
         let buildErrors = parseBuildErrors context
 
         if Array.isEmpty buildErrors then
-            TestRunSuccess(parseTestResults originalTestCode originalTestTree context)
+            // Every exercise uses xUnit v3, so the project builds to an executable
+            // that runs the tests itself. Running it directly skips `dotnet test`,
+            // which spends about 3 s starting MSBuild and the VSTest host for every run.
+            let assembly =
+                Path.Combine(solutionDir, "bin", "release", "net10.0", Path.GetFileNameWithoutExtension(context.ProjectFile) + ".dll")
+
+            Process.exec "dotnet" $"\"{assembly}\" -noLogo -noColor -trx \"{context.TestResultsFile}\"" solutionDir
+
+            try
+                TestRunSuccess(TestResults.parse originalTestCode originalTestTree context)
+            with error ->
+                // For example, the test executable crashed before writing its results.
+                TestRunError [| error.Message |]
         else
             TestRunError buildErrors
 

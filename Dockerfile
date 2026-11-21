@@ -39,13 +39,20 @@ RUN dotnet new console -lang "F#" -o /tmp/fsharp-core && dotnet restore /tmp/fsh
 
 WORKDIR /app
 
-# Copy fsproj and restore as distinct layers
+# Copy fsproj and restore as distinct layers.
+# The project file sets PublishReadyToRun, so the restore also fetches what ReadyToRun needs.
 COPY src/Exercism.TestRunner.FSharp/Exercism.TestRunner.FSharp.fsproj ./
-RUN dotnet restore -a $TARGETARCH
+RUN dotnet restore --arch $TARGETARCH
 
 # Copy everything else and build
 COPY src/Exercism.TestRunner.FSharp/ ./
-RUN dotnet publish -a $TARGETARCH -c Release -o /opt/test-runner --no-restore
+RUN dotnet publish --arch $TARGETARCH --configuration Release --output /opt/test-runner --no-restore
+
+# ReadyToRun needs the runtime packs and the ReadyToRun compiler, which only the
+# runner's own build uses. Removing them keeps them out of the runtime image.
+RUN rm -rf /root/.nuget/packages/microsoft.netcore.app.crossgen2.* \
+    /root/.nuget/packages/microsoft.netcore.app.runtime.* \
+    /root/.nuget/packages/microsoft.aspnetcore.app.runtime.*
 
 # Build runtime image
 FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/sdk:10.0.401-alpine3.23 AS runtime
