@@ -17,8 +17,15 @@
 
 for dir in /opt/test-runner/shapes/*/; do
     cd "${dir}" || exit 1
+    # - The configuration is lowercase "release", so that the build output sits in bin/release/net10.0
+    #   and obj/release/net10.0, as it does for a solution built with `dotnet build -c release`.
+    # - --source limits the build to the packages installed in the image. Without it, a template that
+    #   needs another package would download it into the image.
+    # - ProvideCommandLineArgs makes MSBuild pass the compiler arguments to the target in
+    #   shapes/Directory.Build.targets, which writes them to fsc.rsp.
+    # - The runner replaces the root namespace ExercismRootNamespace with the solution's own.
     if dotnet build --configuration release --source /root/.nuget/packages/ --property:ProvideCommandLineArgs=true \
-           --property:RootNamespace=ExercismRootNamespace --nologo --verbosity quiet &&
+           --property:RootNamespace=ExercismRootNamespace &&
        [ -s fsc.rsp ] && grep -q '^--flaterrors$' fsc.rsp && grep -q '^--fullpaths$' fsc.rsp; then
         ls /usr/share/dotnet/sdk/*/FSharp/fsc.dll > fsc.path
         mv bin/release/net10.0 out
