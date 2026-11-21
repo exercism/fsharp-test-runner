@@ -275,37 +275,47 @@ module DotnetCli =
         |> removePaths
         |> String.normalize
 
-    let private parseBuildErrors context =
-        File.ReadLines(context.BuildLogFile)
+    let private toBuildErrors lines =
+        lines
         |> Seq.map normalizeBuildError
         |> Seq.filter (fun logLine -> logLine |> String.isNullOrWhiteSpace |> not)
         |> Seq.toArray
 
+    // Every exercise uses xUnit v3, so the project builds to an executable
+    // that runs the tests itself. Running it directly skips `dotnet test`,
+    // which spends about 3 s starting MSBuild and the VSTest host for every run.
+    let private runTestExecutable (assembly: string) originalTestCode originalTestTree context =
+        Process.exec "dotnet" $"\"{assembly}\" -noLogo -noColor -trx \"{context.TestResultsFile}\"" (Path.GetDirectoryName(context.TestsFile))
 
-    let runTests originalTestCode originalTestTree context =
+        try
+            TestRunSuccess(TestResults.parse originalTestCode originalTestTree context)
+        with error ->
+            // For example, the test executable crashed before writing its results.
+            TestRunError [| error.Message |]
+
+    let private runTestsWithMSBuild originalTestCode originalTestTree context =
         let solutionDir = Path.GetDirectoryName(context.TestsFile)
 
         Process.exec "dotnet" "restore --source /root/.nuget/packages/" solutionDir
         Process.exec "dotnet" "build --configuration release --no-restore --verbosity quiet /flp:verbosity=quiet;errorsOnly=true" solutionDir
 
-        let buildErrors = parseBuildErrors context
+        let buildErrors = toBuildErrors (File.ReadLines(context.BuildLogFile))
 
         if Array.isEmpty buildErrors then
-            // Every exercise uses xUnit v3, so the project builds to an executable
-            // that runs the tests itself. Running it directly skips `dotnet test`,
-            // which spends about 3 s starting MSBuild and the VSTest host for every run.
             let assembly =
                 Path.Combine(solutionDir, "bin", "release", "net10.0", Path.GetFileNameWithoutExtension(context.ProjectFile) + ".dll")
 
-            Process.exec "dotnet" $"\"{assembly}\" -noLogo -noColor -trx \"{context.TestResultsFile}\"" solutionDir
-
-            try
-                TestRunSuccess(TestResults.parse originalTestCode originalTestTree context)
-            with error ->
-                // For example, the test executable crashed before writing its results.
-                TestRunError [| error.Message |]
+            runTestExecutable assembly originalTestCode originalTestTree context
         else
             TestRunError buildErrors
+
+    let runTests originalTestCode originalTestTree context =
+        match FastPath.compile context with
+        | FastPath.Compiled assembly -> runTestExecutable assembly originalTestCode originalTestTree context
+        | FastPath.CompileErrors errors -> TestRunError(toBuildErrors errors)
+        | FastPath.NotUsed reason ->
+            printfn $"Fast path not used: %s{reason}"
+            runTestsWithMSBuild originalTestCode originalTestTree context
 
 let toTestStatus (testResults: TestResult []) =
     let testStatuses =

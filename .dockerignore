@@ -1,5 +1,7 @@
 *
 !/bin/run.sh
+!/bin/build-shapes.sh
+!/shapes
 !/src/Exercism.TestRunner.FSharp
 /src/Exercism.TestRunner.FSharp/bin
 /src/Exercism.TestRunner.FSharp/obj
