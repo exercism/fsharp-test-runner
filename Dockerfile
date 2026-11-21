@@ -46,7 +46,7 @@ RUN dotnet restore --arch $TARGETARCH
 
 # Copy everything else and build
 COPY src/Exercism.TestRunner.FSharp/ ./
-RUN dotnet publish --arch $TARGETARCH --configuration Release --output /opt/test-runner --no-restore
+RUN dotnet publish --arch $TARGETARCH --output /opt/test-runner --no-restore
 
 # ReadyToRun needs the runtime packs and the ReadyToRun compiler, which only the
 # runner's own build uses. Removing them keeps them out of the runtime image.
