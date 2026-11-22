@@ -3,6 +3,7 @@
 // File-based apps turn on native AOT by default, which makes restore download the AOT compiler and
 // runtime packs. This app only runs with `dotnet run`, so turning AOT off lets it run offline.
 #:property PublishAot=false
+#:package LibGit2Sharp@0.32.0
 
 // Writes the numbered folders in shapes/ from the history of the exercism/fsharp track repo.
 //
@@ -18,10 +19,10 @@
 // This is a file-based app, so it needs no project file. Usage, from the repo root:
 //   bin/generate-shapes.cs shapes [path to the exercism/fsharp repo, default ../fsharp]
 
-using System.Diagnostics;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Xml.Linq;
+using LibGit2Sharp;
 
 if (args.Length is < 1 or > 2)
 {
@@ -33,33 +34,38 @@ var outDirectory = args[0];
 var trackDirectory = args.Length > 1 ? args[1] : "../fsharp";
 HashSet<string> ignoredProperties = ["IsPackable", "RootNamespace"];
 
-// Start from the first commit that mentions xunit.v3, the track's switch to xUnit v3.
-var xunitV3Commits = Lines(Git("log", "--format=%H", "-S", "xunit.v3", "--", "exercises"));
-var since = xunitV3Commits.Length > 0 ? xunitV3Commits[^1] : "HEAD";
-var commits = Lines(Git("log", "--format=%H", $"{since}~1..HEAD", "--", "exercises")).Append("HEAD");
-
 // Each shape keeps the first project file found for it, and the exercises that use it.
 var shapes = new Dictionary<string, (Node Key, string Text, HashSet<string> Exercises)>();
 
-using (var catFile = new GitCatFile(trackDirectory))
+using (var repository = new Repository(trackDirectory))
 {
+    // Read the commits newest first. Commits that leave the exercises folder as it was would find the
+    // same files again, so they are skipped.
+    var commits = repository.Commits
+        .QueryBy(new CommitFilter { SortBy = CommitSortStrategies.Topological | CommitSortStrategies.Time })
+        .Where(commit => commit["exercises"] is not null)
+        .DistinctBy(commit => commit["exercises"].Target.Id);
+
     foreach (var commit in commits)
     {
-        foreach (var path in Git("ls-tree", "-r", "--name-only", commit, "exercises").Split('\n'))
+        var found = false;
+        foreach (var (path, blob) in ProjectFiles((Tree)commit["exercises"].Target, "exercises"))
         {
-            if (!path.EndsWith(".fsproj", StringComparison.Ordinal))
-                continue;
-
-            var text = catFile.Read($"{commit}:{path}").Replace("net9.0", "net10.0");
+            var text = Text(blob).Replace("net9.0", "net10.0");
             if (!text.Contains("xunit.v3", StringComparison.Ordinal))
                 continue;
 
+            found = true;
             var key = Key(text);
             var keyText = key.ToString();
             if (!shapes.ContainsKey(keyText))
                 shapes[keyText] = (key, text, []);
             shapes[keyText].Exercises.Add(path.Split('/')[2]);
         }
+
+        // Commits from before the track switched to xUnit v3 have no xUnit v3 project files, so stop at the first one.
+        if (!found)
+            break;
     }
 }
 
@@ -129,22 +135,30 @@ static string Template(string text)
 static string LeadingText(XElement element) =>
     string.Concat(element.Nodes().TakeWhile(node => node is not XElement).OfType<XText>().Select(text => text.Value)).Trim();
 
-static string[] Lines(string text) => text.Split((char[])['\n', ' '], StringSplitOptions.RemoveEmptyEntries);
-
-string Git(params string[] arguments)
+// Every .fsproj file in the tree and its subfolders, in the order `git ls-tree -r` lists them.
+static IEnumerable<(string Path, Blob Blob)> ProjectFiles(Tree tree, string path)
 {
-    var startInfo = new ProcessStartInfo("git") { RedirectStandardOutput = true };
-    startInfo.ArgumentList.Add("-C");
-    startInfo.ArgumentList.Add(trackDirectory);
-    foreach (var argument in arguments)
-        startInfo.ArgumentList.Add(argument);
+    foreach (var entry in tree)
+    {
+        var entryPath = $"{path}/{entry.Name}";
+        if (entry.Target is Tree subtree)
+        {
+            foreach (var file in ProjectFiles(subtree, entryPath))
+                yield return file;
+        }
+        else if (entry.Target is Blob blob && entry.Name.EndsWith(".fsproj", StringComparison.Ordinal))
+            yield return (entryPath, blob);
+    }
+}
 
-    using var process = Process.Start(startInfo)!;
-    var output = process.StandardOutput.ReadToEnd();
-    process.WaitForExit();
-    if (process.ExitCode != 0)
-        throw new InvalidOperationException($"git {string.Join(' ', arguments)} failed with exit code {process.ExitCode}");
-    return output;
+// Returns the file as text, with Windows and old Mac line endings turned into \n.
+static string Text(Blob blob)
+{
+    using var stream = blob.GetContentStream();
+    using var memory = new MemoryStream();
+    stream.CopyTo(memory);
+    var text = new UTF8Encoding(false, true).GetString(memory.ToArray());
+    return text.Replace("\r\n", "\n").Replace('\r', '\n');
 }
 
 // A shape's key: a string, or a list of keys. Keys sort and print like Python tuples of strings, which
@@ -205,58 +219,5 @@ sealed class Node : IComparable<Node>
             });
         }
         return builder.Append(quote).ToString();
-    }
-}
-
-// Reads files from the track repo through one long-running `git cat-file --batch` process,
-// which is much faster than starting `git show` for every file in every commit.
-sealed class GitCatFile : IDisposable
-{
-    private readonly Process process;
-
-    public GitCatFile(string trackDirectory)
-    {
-        var startInfo = new ProcessStartInfo("git") { RedirectStandardInput = true, RedirectStandardOutput = true };
-        foreach (var argument in new[] { "-C", trackDirectory, "cat-file", "--batch" })
-            startInfo.ArgumentList.Add(argument);
-        process = Process.Start(startInfo)!;
-    }
-
-    // Returns the file as text, with Windows and old Mac line endings turned into \n.
-    public string Read(string objectName)
-    {
-        process.StandardInput.Write(objectName + "\n");
-        process.StandardInput.Flush();
-
-        var output = process.StandardOutput.BaseStream;
-        var header = ReadLine(output).Split(' ');
-        if (header.Length != 3)
-            throw new InvalidOperationException($"git cat-file could not read {objectName}");
-
-        var content = new byte[int.Parse(header[2])];
-        output.ReadExactly(content);
-        output.ReadByte(); // The newline after the content.
-
-        var text = new UTF8Encoding(false, true).GetString(content);
-        return text.Replace("\r\n", "\n").Replace('\r', '\n');
-    }
-
-    private static string ReadLine(Stream stream)
-    {
-        var bytes = new List<byte>();
-        for (var b = stream.ReadByte(); b != '\n'; b = stream.ReadByte())
-        {
-            if (b == -1)
-                throw new EndOfStreamException();
-            bytes.Add((byte)b);
-        }
-        return Encoding.UTF8.GetString(bytes.ToArray());
-    }
-
-    public void Dispose()
-    {
-        process.StandardInput.Close();
-        process.WaitForExit();
-        process.Dispose();
     }
 }
