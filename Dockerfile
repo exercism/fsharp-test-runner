@@ -40,7 +40,6 @@ RUN dotnet new console -lang "F#" -o /tmp/fsharp-core && dotnet restore /tmp/fsh
 WORKDIR /app
 
 # Copy fsproj and restore as distinct layers.
-# The project file sets PublishReadyToRun, so the restore also fetches what ReadyToRun needs.
 COPY src/Exercism.TestRunner.FSharp/Exercism.TestRunner.FSharp.fsproj ./
 RUN dotnet restore --arch $TARGETARCH
 
