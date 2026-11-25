@@ -1,0 +1,12 @@
+<Project>
+  <!-- MSBuild imports this file into every template project in the shapes/ folder (see bin/build-shapes.sh). -->
+  <PropertyGroup>
+    <!-- The build output sits in bin/release/net10.0 and obj/release/net10.0, as it does for a solution
+         built with `dotnet build -c release`. -->
+    <Configuration>release</Configuration>
+    <!-- Restore only from the packages installed in the image, so that a template never downloads a package. -->
+    <RestoreSources>/root/.nuget/packages/</RestoreSources>
+    <!-- Pass the compiler arguments to the target in Directory.Build.targets, which writes them to fsc.rsp. -->
+    <ProvideCommandLineArgs>true</ProvideCommandLineArgs>
+  </PropertyGroup>
+</Project>
