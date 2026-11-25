@@ -28,7 +28,6 @@ type CompileResult =
 
 let ShapesDirectory = "/opt/test-runner/shapes"
 
-// The template project's name. We replace it with the solution's project name wherever it appears.
 let private Token = "ExercismShape"
 
 // The template's root namespace (set by bin/build-shapes.sh). The SDK and the xUnit packages put their
@@ -37,17 +36,14 @@ let private RootNamespaceToken = "ExercismRootNamespace"
 
 let private validNamespace = Regex(@"^[A-Za-z_][A-Za-z0-9_]*(\.[A-Za-z_][A-Za-z0-9_]*)*$", RegexOptions.Compiled)
 
-// MSBuild uses the project name when the project file sets no RootNamespace.
 let private rootNamespace (projectFileText: string) projectName =
     XElement.Parse(projectFileText).Elements(XName.Get "PropertyGroup").Elements(XName.Get "RootNamespace")
     |> Seq.tryLast
     |> Option.map (fun element -> element.Value.Trim())
     |> Option.defaultValue projectName
 
-// Properties that don't change how the project compiles or runs.
 let private ignoredProperties = set [ "IsPackable"; "RootNamespace" ]
 
-// Metadata that a PackageReference may give as child elements. It becomes part of the key.
 let private allowedPackageMetadata = set [ "IncludeAssets"; "ExcludeAssets"; "PrivateAssets" ]
 
 // Files that could change how MSBuild builds the project. If the solution folder has any of them,
@@ -138,7 +134,6 @@ let private findShapeDirectory key =
             && File.Exists projectFile
             && (shapeKey (File.ReadAllText projectFile) |> Option.map fst) = Some key)
 
-// Each Compile item must be a plain .fs or .fsi file inside the solution folder.
 let private sourceFiles (solutionDirectory: string) (compileItems: string list) =
     let files =
         compileItems
